@@ -1,0 +1,122 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Shared", "src\Shared\PB.Shared\PB.Shared.csproj", "{A1B2C3D4-0001-0001-0001-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Api", "src\Bootstrapper\PB.Api\PB.Api.csproj", "{A1B2C3D4-0002-0002-0002-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.AttractionDefinition.Domain", "src\Modules\AttractionDefinition\PB.Modules.AttractionDefinition.Domain\PB.Modules.AttractionDefinition.Domain.csproj", "{B1000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.AttractionDefinition.Application", "src\Modules\AttractionDefinition\PB.Modules.AttractionDefinition.Application\PB.Modules.AttractionDefinition.Application.csproj", "{B1000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.AttractionDefinition.Api", "src\Modules\AttractionDefinition\PB.Modules.AttractionDefinition.Api\PB.Modules.AttractionDefinition.Api.csproj", "{B1000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.AttractionDefinition.Infrastructure", "src\Modules\AttractionDefinition\PB.Modules.AttractionDefinition.Infrastructure\PB.Modules.AttractionDefinition.Infrastructure.csproj", "{B1000001-0000-0000-0000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Domain", "src\Modules\Catalog\PB.Modules.Catalog.Domain\PB.Modules.Catalog.Domain.csproj", "{B2000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Application", "src\Modules\Catalog\PB.Modules.Catalog.Application\PB.Modules.Catalog.Application.csproj", "{B2000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Api", "src\Modules\Catalog\PB.Modules.Catalog.Api\PB.Modules.Catalog.Api.csproj", "{B2000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Infrastructure", "src\Modules\Catalog\PB.Modules.Catalog.Infrastructure\PB.Modules.Catalog.Infrastructure.csproj", "{B2000001-0000-0000-0000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Domain", "src\Modules\Preference\PB.Modules.Preference.Domain\PB.Modules.Preference.Domain.csproj", "{B3000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Application", "src\Modules\Preference\PB.Modules.Preference.Application\PB.Modules.Preference.Application.csproj", "{B3000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Api", "src\Modules\Preference\PB.Modules.Preference.Api\PB.Modules.Preference.Api.csproj", "{B3000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Infrastructure", "src\Modules\Preference\PB.Modules.Preference.Infrastructure\PB.Modules.Preference.Infrastructure.csproj", "{B3000001-0000-0000-0000-000000000004}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.TripSelection.Domain", "src\Modules\TripSelection\PB.Modules.TripSelection.Domain\PB.Modules.TripSelection.Domain.csproj", "{B4000001-0000-0000-0000-000000000001}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.TripSelection.Application", "src\Modules\TripSelection\PB.Modules.TripSelection.Application\PB.Modules.TripSelection.Application.csproj", "{B4000001-0000-0000-0000-000000000002}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.TripSelection.Api", "src\Modules\TripSelection\PB.Modules.TripSelection.Api\PB.Modules.TripSelection.Api.csproj", "{B4000001-0000-0000-0000-000000000003}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.TripSelection.Infrastructure", "src\Modules\TripSelection\PB.Modules.TripSelection.Infrastructure\PB.Modules.TripSelection.Infrastructure.csproj", "{B4000001-0000-0000-0000-000000000004}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A1B2C3D4-0001-0001-0001-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-0001-0001-0001-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-0001-0001-0001-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-0001-0001-0001-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A1B2C3D4-0002-0002-0002-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A1B2C3D4-0002-0002-0002-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A1B2C3D4-0002-0002-0002-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A1B2C3D4-0002-0002-0002-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B1000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B3000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B3000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000001}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000002}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000003}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000003}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000003}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000003}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000004}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000004}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4000001-0000-0000-0000-000000000004}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4000001-0000-0000-0000-000000000004}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../../Modules/AttractionDefinition/PB.Modules.AttractionDefinition.Api/PB.Modules.AttractionDefinition.Api.csproj" />
+    <ProjectReference Include="../../Modules/AttractionDefinition/PB.Modules.AttractionDefinition.Infrastructure/PB.Modules.AttractionDefinition.Infrastructure.csproj" />
+    <ProjectReference Include="../../Modules/Catalog/PB.Modules.Catalog.Api/PB.Modules.Catalog.Api.csproj" />
+    <ProjectReference Include="../../Modules/Catalog/PB.Modules.Catalog.Infrastructure/PB.Modules.Catalog.Infrastructure.csproj" />
+    <ProjectReference Include="../../Modules/Preference/PB.Modules.Preference.Api/PB.Modules.Preference.Api.csproj" />
+    <ProjectReference Include="../../Modules/Preference/PB.Modules.Preference.Infrastructure/PB.Modules.Preference.Infrastructure.csproj" />
+    <ProjectReference Include="../../Modules/TripSelection/PB.Modules.TripSelection.Api/PB.Modules.TripSelection.Api.csproj" />
+    <ProjectReference Include="../../Modules/TripSelection/PB.Modules.TripSelection.Infrastructure/PB.Modules.TripSelection.Infrastructure.csproj" />
+  </ItemGroup>
+</Project>
