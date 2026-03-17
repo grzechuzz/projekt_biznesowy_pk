@@ -5,6 +5,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../../Modules/AttractionDefinition/PB.Modules.AttractionDefinition.Api/PB.Modules.AttractionDefinition.Api.csproj" />
     <ProjectReference Include="../../Modules/AttractionDefinition/PB.Modules.AttractionDefinition.Infrastructure/PB.Modules.AttractionDefinition.Infrastructure.csproj" />
     <ProjectReference Include="../../Modules/Catalog/PB.Modules.Catalog.Api/PB.Modules.Catalog.Api.csproj" />
