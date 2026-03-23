@@ -6,7 +6,5 @@
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="../PB.Modules.TripSelection.Domain/PB.Modules.TripSelection.Domain.csproj" />
-    <ProjectReference Include="../../Catalog/PB.Modules.Catalog.Application/PB.Modules.Catalog.Application.csproj" />
-    <ProjectReference Include="../../Preference/PB.Modules.Preference.Application/PB.Modules.Preference.Application.csproj" />
   </ItemGroup>
 </Project>

@@ -1,25 +1,26 @@
+using PB.Shared.Domain;
+using PB.Modules.AttractionDefinition.Domain.Enums;
+
 namespace PB.Modules.AttractionDefinition.Domain.ValueObjects;
 
-using PB.Shared.Domain;
-
-public class SeasonalAvailability : ValueObject
+public sealed class SeasonalAvailability : ValueObject
 {
     public bool Spring { get; }
     public bool Summer { get; }
     public bool Autumn { get; }
     public bool Winter { get; }
 
-    public static SeasonalAvailability AllYear => new(true, true, true, true);
-
     public SeasonalAvailability(bool spring, bool summer, bool autumn, bool winter)
     {
         if (!spring && !summer && !autumn && !winter)
-            throw new DomainException("Attraction must be available in at least one season.");
+            throw new DomainException("At least one season must be available");
         Spring = spring;
         Summer = summer;
         Autumn = autumn;
         Winter = winter;
     }
+
+    public static SeasonalAvailability AllYear() => new SeasonalAvailability(true, true, true, true);
 
     public bool IsAvailableIn(Season season) => season switch
     {
@@ -37,12 +38,4 @@ public class SeasonalAvailability : ValueObject
         yield return Autumn;
         yield return Winter;
     }
-}
-
-public enum Season
-{
-    Spring,
-    Summer,
-    Autumn,
-    Winter
 }

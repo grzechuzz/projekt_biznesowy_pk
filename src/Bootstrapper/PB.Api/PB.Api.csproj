@@ -12,8 +12,8 @@
     <ProjectReference Include="../../Modules/AttractionDefinition/PB.Modules.AttractionDefinition.Infrastructure/PB.Modules.AttractionDefinition.Infrastructure.csproj" />
     <ProjectReference Include="../../Modules/Catalog/PB.Modules.Catalog.Api/PB.Modules.Catalog.Api.csproj" />
     <ProjectReference Include="../../Modules/Catalog/PB.Modules.Catalog.Infrastructure/PB.Modules.Catalog.Infrastructure.csproj" />
-    <ProjectReference Include="../../Modules/Preference/PB.Modules.Preference.Api/PB.Modules.Preference.Api.csproj" />
-    <ProjectReference Include="../../Modules/Preference/PB.Modules.Preference.Infrastructure/PB.Modules.Preference.Infrastructure.csproj" />
+    <ProjectReference Include="../../Modules/Availability/PB.Modules.Availability.Api/PB.Modules.Availability.Api.csproj" />
+    <ProjectReference Include="../../Modules/Availability/PB.Modules.Availability.Infrastructure/PB.Modules.Availability.Infrastructure.csproj" />
     <ProjectReference Include="../../Modules/TripSelection/PB.Modules.TripSelection.Api/PB.Modules.TripSelection.Api.csproj" />
     <ProjectReference Include="../../Modules/TripSelection/PB.Modules.TripSelection.Infrastructure/PB.Modules.TripSelection.Infrastructure.csproj" />
   </ItemGroup>

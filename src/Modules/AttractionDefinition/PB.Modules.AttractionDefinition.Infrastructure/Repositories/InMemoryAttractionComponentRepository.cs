@@ -1,8 +1,10 @@
-namespace PB.Modules.AttractionDefinition.Infrastructure.Repositories;
-
-using PB.Modules.AttractionDefinition.Domain.Entities;
-using PB.Modules.AttractionDefinition.Domain.Repositories;
 using System.Collections.Concurrent;
+using PB.Shared.Domain;
+using PB.Modules.AttractionDefinition.Domain.Aggregates;
+using PB.Modules.AttractionDefinition.Domain.Ports;
+using AttractionDefinitionAggregate = PB.Modules.AttractionDefinition.Domain.Aggregates.AttractionDefinition;
+
+namespace PB.Modules.AttractionDefinition.Infrastructure.Repositories;
 
 public class InMemoryAttractionComponentRepository : IAttractionComponentRepository
 {
@@ -10,23 +12,21 @@ public class InMemoryAttractionComponentRepository : IAttractionComponentReposit
 
     public Task<AttractionComponent?> GetByIdAsync(Guid id)
     {
-        _store.TryGetValue(id, out var component);
-        return Task.FromResult(component);
-    }
-
-    public Task<IReadOnlyList<AttractionComponent>> GetAllAsync()
-    {
-        IReadOnlyList<AttractionComponent> result = _store.Values.ToList();
+        _store.TryGetValue(id, out var result);
         return Task.FromResult(result);
     }
 
-    public Task<IReadOnlyList<AttractionComponent>> GetByStatusAsync(AttractionStatus status)
-    {
-        IReadOnlyList<AttractionComponent> result = _store.Values
-            .Where(c => c.Status == status)
-            .ToList();
-        return Task.FromResult(result);
-    }
+    public Task<IEnumerable<AttractionComponent>> GetAllAsync()
+        => Task.FromResult<IEnumerable<AttractionComponent>>(_store.Values.ToList());
+
+    public Task<IEnumerable<AttractionDefinitionAggregate>> GetAllDefinitionsAsync()
+        => Task.FromResult(_store.Values.OfType<AttractionDefinitionAggregate>());
+
+    public Task<IEnumerable<AttractionDefinitionAggregate>> GetDefinitionsByTagAsync(Tag tag)
+        => Task.FromResult(_store.Values.OfType<AttractionDefinitionAggregate>().Where(d => d.Tags.Contains(tag)));
+
+    public Task<IEnumerable<AttractionPackage>> GetAllPackagesAsync()
+        => Task.FromResult(_store.Values.OfType<AttractionPackage>());
 
     public Task AddAsync(AttractionComponent component)
     {
@@ -37,6 +37,12 @@ public class InMemoryAttractionComponentRepository : IAttractionComponentReposit
     public Task UpdateAsync(AttractionComponent component)
     {
         _store[component.Id] = component;
+        return Task.CompletedTask;
+    }
+
+    public Task DeleteAsync(Guid id)
+    {
+        _store.TryRemove(id, out _);
         return Task.CompletedTask;
     }
 }

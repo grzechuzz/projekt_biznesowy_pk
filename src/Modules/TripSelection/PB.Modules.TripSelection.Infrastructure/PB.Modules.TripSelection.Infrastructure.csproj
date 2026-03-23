@@ -8,7 +8,8 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../PB.Modules.TripSelection.Domain/PB.Modules.TripSelection.Domain.csproj" />
     <ProjectReference Include="../PB.Modules.TripSelection.Application/PB.Modules.TripSelection.Application.csproj" />
+    <ProjectReference Include="../../Catalog/PB.Modules.Catalog.Application/PB.Modules.Catalog.Application.csproj" />
+    <ProjectReference Include="../../Availability/PB.Modules.Availability.Application/PB.Modules.Availability.Application.csproj" />
   </ItemGroup>
 </Project>

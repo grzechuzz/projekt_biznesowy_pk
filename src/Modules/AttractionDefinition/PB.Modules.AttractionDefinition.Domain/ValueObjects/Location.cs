@@ -1,8 +1,8 @@
-namespace PB.Modules.AttractionDefinition.Domain.ValueObjects;
-
 using PB.Shared.Domain;
 
-public class Location : ValueObject
+namespace PB.Modules.AttractionDefinition.Domain.ValueObjects;
+
+public sealed class Location : ValueObject
 {
     public string City { get; }
     public string? Address { get; }
@@ -11,10 +11,9 @@ public class Location : ValueObject
 
     public Location(string city, string? address = null, double? latitude = null, double? longitude = null)
     {
-        if (string.IsNullOrWhiteSpace(city))
-            throw new DomainException("City cannot be empty.");
-        City = city;
-        Address = address;
+        if (string.IsNullOrWhiteSpace(city)) throw new DomainException("City cannot be empty");
+        City = city.Trim();
+        Address = address?.Trim();
         Latitude = latitude;
         Longitude = longitude;
     }

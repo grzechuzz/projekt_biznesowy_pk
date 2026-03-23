@@ -8,7 +8,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../PB.Modules.Catalog.Domain/PB.Modules.Catalog.Domain.csproj" />
     <ProjectReference Include="../PB.Modules.Catalog.Application/PB.Modules.Catalog.Application.csproj" />
   </ItemGroup>
 </Project>
