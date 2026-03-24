@@ -279,7 +279,7 @@ Sesja doboru atrakcji do wycieczki. Uzytkownik dodaje atrakcje z katalogu - modu
 | Typ | Znaczenie | Przyklad |
 |---|---|---|
 | **Excludes** | Jesli A to nie B | Audiobook PL wyklucza audiobook EN |
-| **Suggests** | Jesli A to moze B | Mecz Cracovii sugeruje bar na Kazimierzu |
+| **Suggests** | Jesli A to moze B | Zwiedzanie Wawelu sugeruje Sukiennice |
 | **Requires** | Jesli A to musi B | Pietra II Wawelu wymaga biletu na Pietra I |
 | **Replaces** | A jest alternatywa dla B | Pelny pakiet Wawelu zastepuje pojedyncze |
 
