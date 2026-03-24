@@ -16,7 +16,10 @@ builder.Services.AddControllers()
     .AddApplicationPart(typeof(TripSelectionModule).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+});
 
 builder.Services.AddAttractionDefinitionModule();
 builder.Services.AddCatalogModule();
