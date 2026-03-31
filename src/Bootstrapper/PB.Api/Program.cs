@@ -1,9 +1,10 @@
+using PB.Api;
 using PB.Modules.AttractionDefinition.Api;
 using PB.Modules.AttractionDefinition.Infrastructure;
 using PB.Modules.Catalog.Api;
 using PB.Modules.Catalog.Infrastructure;
-using PB.Modules.Preference.Api;
-using PB.Modules.Preference.Infrastructure;
+using PB.Modules.Availability.Api;
+using PB.Modules.Availability.Infrastructure;
 using PB.Modules.TripSelection.Api;
 using PB.Modules.TripSelection.Infrastructure;
 
@@ -12,19 +13,30 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .AddApplicationPart(typeof(AttractionDefinitionModule).Assembly)
     .AddApplicationPart(typeof(CatalogModule).Assembly)
-    .AddApplicationPart(typeof(PreferenceModule).Assembly)
+    .AddApplicationPart(typeof(AvailabilityModule).Assembly)
     .AddApplicationPart(typeof(TripSelectionModule).Assembly);
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.CustomSchemaIds(type => type.FullName?.Replace("+", "."));
+});
 
 builder.Services.AddAttractionDefinitionModule();
 builder.Services.AddCatalogModule();
-builder.Services.AddPreferenceModule();
+builder.Services.AddAvailabilityModule();
 builder.Services.AddTripSelectionModule();
 
 var app = builder.Build();
 
+// Seed demo data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(scope.ServiceProvider);
+    await seeder.SeedAsync();
+}
+
+app.UseMiddleware<PB.Api.ExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();

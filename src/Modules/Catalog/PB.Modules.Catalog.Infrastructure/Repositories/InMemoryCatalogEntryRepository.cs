@@ -1,8 +1,9 @@
-namespace PB.Modules.Catalog.Infrastructure.Repositories;
-
-using PB.Modules.Catalog.Domain.Entities;
-using PB.Modules.Catalog.Domain.Repositories;
 using System.Collections.Concurrent;
+using PB.Modules.Catalog.Domain.Aggregates;
+using PB.Modules.Catalog.Domain.Enums;
+using PB.Modules.Catalog.Domain.Ports;
+
+namespace PB.Modules.Catalog.Infrastructure.Repositories;
 
 public class InMemoryCatalogEntryRepository : ICatalogEntryRepository
 {
@@ -10,34 +11,52 @@ public class InMemoryCatalogEntryRepository : ICatalogEntryRepository
 
     public Task<CatalogEntry?> GetByIdAsync(Guid id)
     {
-        _store.TryGetValue(id, out var entry);
-        return Task.FromResult(entry);
-    }
-
-    public Task<IReadOnlyList<CatalogEntry>> GetAllAsync()
-    {
-        IReadOnlyList<CatalogEntry> result = _store.Values.ToList();
+        _store.TryGetValue(id, out var result);
         return Task.FromResult(result);
     }
 
-    public Task<IReadOnlyList<CatalogEntry>> SearchAsync(string? city, DateOnly? from, DateOnly? to, string? category)
+    public Task<IEnumerable<CatalogEntry>> GetAllAsync()
+        => Task.FromResult<IEnumerable<CatalogEntry>>(_store.Values.ToList());
+
+    public Task<IEnumerable<CatalogEntry>> SearchAsync(string? city, DateOnly? from, DateOnly? to, IEnumerable<string>? tags, CatalogEntryStatus? status)
     {
         var query = _store.Values.AsEnumerable();
 
         if (!string.IsNullOrWhiteSpace(city))
-            query = query.Where(e => e.Location.City.Equals(city, StringComparison.OrdinalIgnoreCase));
+            query = query.Where(e => e.Location.City.Contains(city, StringComparison.OrdinalIgnoreCase));
 
-        if (from.HasValue && to.HasValue)
-            query = query.Where(e => e.IsAvailableBetween(from.Value, to.Value));
+        if (from.HasValue)
+            query = query.Where(e => e.DateRange.To >= from.Value);
 
-        if (!string.IsNullOrWhiteSpace(category))
-            query = query.Where(e => e.Category.Equals(category, StringComparison.OrdinalIgnoreCase));
+        if (to.HasValue)
+            query = query.Where(e => e.DateRange.From <= to.Value);
 
-        IReadOnlyList<CatalogEntry> result = query.ToList();
-        return Task.FromResult(result);
+        if (tags != null)
+        {
+            var tagList = tags.ToList();
+            if (tagList.Any())
+                query = query.Where(e => e.Tags.Any(t => tagList.Any(tl => t.Name.Contains(tl, StringComparison.OrdinalIgnoreCase))));
+        }
+
+        if (status.HasValue)
+            query = query.Where(e => e.Status == status.Value);
+
+        return Task.FromResult<IEnumerable<CatalogEntry>>(query.ToList());
+    }
+
+    public Task<IEnumerable<CatalogEntry>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    {
+        var results = _store.Values.Where(e => e.AttractionDefinitionId == attractionDefinitionId).ToList();
+        return Task.FromResult<IEnumerable<CatalogEntry>>(results);
     }
 
     public Task AddAsync(CatalogEntry entry)
+    {
+        _store[entry.Id] = entry;
+        return Task.CompletedTask;
+    }
+
+    public Task UpdateAsync(CatalogEntry entry)
     {
         _store[entry.Id] = entry;
         return Task.CompletedTask;

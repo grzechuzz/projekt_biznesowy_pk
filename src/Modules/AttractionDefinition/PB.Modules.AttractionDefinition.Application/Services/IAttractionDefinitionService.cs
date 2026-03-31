@@ -1,14 +1,17 @@
-namespace PB.Modules.AttractionDefinition.Application.Services;
-
 using PB.Modules.AttractionDefinition.Application.DTOs;
+
+namespace PB.Modules.AttractionDefinition.Application.Services;
 
 public interface IAttractionDefinitionService
 {
-    Task<AttractionComponentDto> CreateSingleAsync(CreateSingleAttractionDto dto);
-    Task<AttractionComponentDto> CreateGroupAsync(CreateAttractionGroupDto dto);
-    Task<AttractionComponentDto?> GetByIdAsync(Guid id);
-    Task<IReadOnlyList<AttractionComponentDto>> GetAllAsync(string? statusFilter = null);
-    Task<AttractionComponentDto> UpdateSingleAsync(Guid id, UpdateSingleAttractionDto dto);
-    Task<AttractionComponentDto> PublishAsync(Guid id);
-    Task<AttractionComponentDto> ArchiveAsync(Guid id);
+    Task<AttractionDefinitionDto> CreateAsync(CreateAttractionDefinitionDto dto);
+    Task<AttractionDefinitionDto?> GetByIdAsync(Guid id);
+    Task<IEnumerable<AttractionDefinitionDto>> GetAllAsync(string? tagFilter = null, string? cityFilter = null, bool? isComplete = null);
+    Task<AttractionDefinitionDto> UpdateAsync(Guid id, UpdateAttractionDefinitionDto dto);
+    Task DeleteAsync(Guid id);
+    Task<AttractionDefinitionDto> AddVariantAsync(Guid id, AddVariantDto dto);
+    Task<AttractionDefinitionDto> UpdateVariantAsync(Guid id, Guid variantId, UpdateVariantDto dto);
+    Task<AttractionDefinitionDto> RemoveVariantAsync(Guid id, Guid variantId);
+    Task<AttractionDefinitionDto> AddTagAsync(Guid id, TagDto tag);
+    Task<AttractionDefinitionDto> RemoveTagAsync(Guid id, TagDto tag);
 }

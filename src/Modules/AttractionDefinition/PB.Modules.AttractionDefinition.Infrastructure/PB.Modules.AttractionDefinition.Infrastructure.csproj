@@ -8,7 +8,6 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../PB.Modules.AttractionDefinition.Domain/PB.Modules.AttractionDefinition.Domain.csproj" />
     <ProjectReference Include="../PB.Modules.AttractionDefinition.Application/PB.Modules.AttractionDefinition.Application.csproj" />
   </ItemGroup>
 </Project>

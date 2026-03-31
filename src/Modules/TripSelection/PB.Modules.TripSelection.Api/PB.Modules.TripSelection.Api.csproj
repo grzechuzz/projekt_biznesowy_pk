@@ -6,6 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="../PB.Modules.TripSelection.Application/PB.Modules.TripSelection.Application.csproj" />
   </ItemGroup>
 </Project>

@@ -1,9 +1,9 @@
-namespace PB.Modules.AttractionDefinition.Infrastructure;
-
 using Microsoft.Extensions.DependencyInjection;
 using PB.Modules.AttractionDefinition.Application.Services;
-using PB.Modules.AttractionDefinition.Domain.Repositories;
+using PB.Modules.AttractionDefinition.Domain.Ports;
 using PB.Modules.AttractionDefinition.Infrastructure.Repositories;
+
+namespace PB.Modules.AttractionDefinition.Infrastructure;
 
 public static class Extensions
 {
@@ -11,6 +11,7 @@ public static class Extensions
     {
         services.AddSingleton<IAttractionComponentRepository, InMemoryAttractionComponentRepository>();
         services.AddScoped<IAttractionDefinitionService, AttractionDefinitionService>();
+        services.AddScoped<IAttractionPackageService, AttractionPackageService>();
         return services;
     }
 }

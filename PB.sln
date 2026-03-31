@@ -24,13 +24,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Api", "s
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Catalog.Infrastructure", "src\Modules\Catalog\PB.Modules.Catalog.Infrastructure\PB.Modules.Catalog.Infrastructure.csproj", "{B2000001-0000-0000-0000-000000000004}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Domain", "src\Modules\Preference\PB.Modules.Preference.Domain\PB.Modules.Preference.Domain.csproj", "{B3000001-0000-0000-0000-000000000001}"
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Availability.Domain", "src\Modules\Availability\PB.Modules.Availability.Domain\PB.Modules.Availability.Domain.csproj", "{B3000001-0000-0000-0000-000000000001}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Application", "src\Modules\Preference\PB.Modules.Preference.Application\PB.Modules.Preference.Application.csproj", "{B3000001-0000-0000-0000-000000000002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Availability.Application", "src\Modules\Availability\PB.Modules.Availability.Application\PB.Modules.Availability.Application.csproj", "{B3000001-0000-0000-0000-000000000002}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Api", "src\Modules\Preference\PB.Modules.Preference.Api\PB.Modules.Preference.Api.csproj", "{B3000001-0000-0000-0000-000000000003}"
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Availability.Api", "src\Modules\Availability\PB.Modules.Availability.Api\PB.Modules.Availability.Api.csproj", "{B3000001-0000-0000-0000-000000000003}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Preference.Infrastructure", "src\Modules\Preference\PB.Modules.Preference.Infrastructure\PB.Modules.Preference.Infrastructure.csproj", "{B3000001-0000-0000-0000-000000000004}"
+Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.Availability.Infrastructure", "src\Modules\Availability\PB.Modules.Availability.Infrastructure\PB.Modules.Availability.Infrastructure.csproj", "{B3000001-0000-0000-0000-000000000004}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00A060E8C9CD}") = "PB.Modules.TripSelection.Domain", "src\Modules\TripSelection\PB.Modules.TripSelection.Domain\PB.Modules.TripSelection.Domain.csproj", "{B4000001-0000-0000-0000-000000000001}"
 EndProject
