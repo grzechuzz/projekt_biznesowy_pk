@@ -54,12 +54,13 @@ public class SelectionSessionService : ISelectionSessionService
         var entrySnapshot = await _catalogEntryQuery.GetByIdAsync(dto.CatalogEntryId)
             ?? throw new DomainException($"Catalog entry {dto.CatalogEntryId} not found");
 
-        var issues = new List<SelectionIssue>();
+        var blockingIssues = new List<SelectionIssue>();
+        var softIssues = new List<SelectionIssue>();
 
-        // Check availability
+        // Check availability — hard block
         var isAvailable = await _availabilityQuery.IsAvailableAsync(dto.CatalogEntryId);
         if (!isAvailable)
-            issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+            blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                 $"No tickets available for '{entrySnapshot.Name}'"));
 
         // Validate booking constraints from the catalog entry
@@ -70,7 +71,7 @@ public class SelectionSessionService : ISelectionSessionService
                 case "requireddaysahead":
                     var daysUntilTravel = (session.TravelDateRange.From.ToDateTime(TimeOnly.MinValue) - DateTime.UtcNow).Days;
                     if (constraint.MinValue.HasValue && daysUntilTravel < (int)constraint.MinValue.Value)
-                        issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                        blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                             $"'{entrySnapshot.Name}' requires booking at least {(int)constraint.MinValue.Value} days ahead (you have {daysUntilTravel} days)"));
                     break;
 
@@ -78,33 +79,40 @@ public class SelectionSessionService : ISelectionSessionService
                     if (constraint.Key == "group_size")
                     {
                         if (constraint.MinValue.HasValue && session.GroupSize < (int)constraint.MinValue.Value)
-                            issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                            blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                                 $"'{entrySnapshot.Name}' requires minimum group size of {(int)constraint.MinValue.Value} (your group: {session.GroupSize})"));
                         if (constraint.MaxValue.HasValue && session.GroupSize > (int)constraint.MaxValue.Value)
-                            issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                            blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                                 $"'{entrySnapshot.Name}' allows maximum group size of {(int)constraint.MaxValue.Value} (your group: {session.GroupSize})"));
                     }
                     break;
 
                 case "min":
                     if (constraint.Key == "group_size" && constraint.MinValue.HasValue && session.GroupSize < (int)constraint.MinValue.Value)
-                        issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                        blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                             $"'{entrySnapshot.Name}' requires minimum group size of {(int)constraint.MinValue.Value} (your group: {session.GroupSize})"));
                     break;
 
                 case "max":
                     if (constraint.Key == "group_size" && constraint.MaxValue.HasValue && session.GroupSize > (int)constraint.MaxValue.Value)
-                        issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                        blockingIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                             $"'{entrySnapshot.Name}' allows maximum group size of {(int)constraint.MaxValue.Value} (your group: {session.GroupSize})"));
                     break;
 
                 case "oneof":
+                    // Soft warning — user picks a specific option (e.g. language) at booking time, not at trip selection
                     if (constraint.AllowedValues.Count > 0)
-                        issues.Add(new SelectionIssue(IssueType.ConstraintViolation,
+                        softIssues.Add(new SelectionIssue(IssueType.ConstraintViolation,
                             $"'{entrySnapshot.Name}' requires choosing: {string.Join(", ", constraint.AllowedValues)} (for '{constraint.Key}')"));
                     break;
             }
         }
+
+        // Block on hard constraint violations before adding
+        if (blockingIssues.Any())
+            throw new DomainException(string.Join("; ", blockingIssues.Select(i => i.Message)));
+
+        var issues = softIssues;
 
         // Get relations for this attraction (new item as source)
         var relations = (await _relationRepository.GetBySourceIdAsync(entrySnapshot.AttractionDefinitionId)).ToList();
@@ -124,7 +132,7 @@ public class SelectionSessionService : ISelectionSessionService
             dto.CatalogEntryId, entrySnapshot.Name, entrySnapshot.Tags,
             entrySnapshot.AttractionDefinitionId, entrySnapshot.VariantId);
 
-        // Validate against existing items
+        // Validate against existing items (relation-based warnings)
         var validationIssues = _relationValidationService.ValidateNewItem(newItem, session.MustHaveItems, relations);
         issues.AddRange(validationIssues);
 
