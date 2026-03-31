@@ -210,8 +210,8 @@ Uzytkownik tworzy `SelectionSession` podajac:
 
 Potem dodaje atrakcje z katalogu. Przy kazdym dodaniu system:
 
-1. **Sprawdza dostepnosc biletow** - pyta modul Availability czy sa wolne bilety
-2. **Waliduje constrainty** z CatalogEntry - np. czy grupa sie miesci w limicie (group_size), czy jest wystarczajaco duzo czasu na rezerwacje (booking_days_ahead), czy trzeba wybrac jezyk (language OneOf)
+1. **Sprawdza dostepnosc biletow** - pyta modul Availability czy sa wolne bilety; brak biletow **blokuje** dodanie
+2. **Waliduje constrainty** z CatalogEntry - hard constraints (group_size, booking_days_ahead) **blokuja** dodanie rzucajac DomainException; OneOf (np. jezyk) zwraca soft issue - atrakcja dodana, uzytkownik wybiera przy bookingu
 3. **Waliduje relacje** - czy nowa atrakcja nie wyklucza istniejacych (i na odwrot), czy wymagane zaleznosci sa spelnione
 4. **Generuje sugestie** - na podstawie relacji SUGGESTS, szuka odpowiednich CatalogEntry
 5. **Generuje wykluczenia** - co trzeba wykluczyc z przyszlych propozycji
@@ -221,7 +221,7 @@ Potem dodaje atrakcje z katalogu. Przy kazdym dodaniu system:
 - **MustHaveItems** - atrakcje ktore uzytkownik explicite dodal + te wymagane przez relacje REQUIRES
 - **OptionalSuggestions** - propozycje z relacji SUGGESTS (jesli sa dostepne w katalogu i maja bilety)
 - **ExcludedIds** - co jest wykluczone i nie powinno byc proponowane
-- **Issues** - lista problemow (konflikty, brak biletow, brakujace zaleznosci)
+- **Issues** - lista miekkich problemow (konflikty relacji, OneOf do wyboru przy bookingu) - NIE zawiera hard constraint violations (te blokuja dodanie)
 
 ### Cross-module komunikacja
 
@@ -261,13 +261,16 @@ W warstwie Infrastructure sa **adaptery** ktore implementuja te porty delegujac 
 5. Dodaje "Tauron Concert" do sesji:
    -> System wykrywa CONFLICT: Wieliczka juz w sesji wyklucza Tauron
    -> Issue: [Conflict] "Wieliczka in your selection conflicts with Tauron"
-   -> Atrakcja JEST dodana do must-have ale z ostrzezeniem
+   -> Atrakcja JEST dodana do must-have ale z ostrzezeniem (conflict to soft issue)
 
-6. Scenariusz z naruszeniem constraintow (grupa 20, jutro):
-   -> Dodaje Wawel State Rooms (group_size max 15, booking 2 dni):
-   -> Issues: ["allows max group size 15 (your group: 20)",
-               "requires booking 2 days ahead (you have 0 days)",
-               "requires choosing: polish, english, german (for 'language')"]
+6. Scenariusz z naruszeniem constraintow (grupa 20):
+   -> Dodaje Wawel State Rooms (group_size max 15):
+   -> DomainException: "allows max group size 15 (your group: 20)" -> atrakcja NIE jest dodana
+
+7. Scenariusz z OneOf (grupa 4, poprawna):
+   -> Dodaje Wawel State Rooms (group_size OK, booking OK, language OneOf):
+   -> Atrakcja DODANA, issues: ["requires choosing: polish, english, german (for 'language')"]
+   -> Uzytkownik wybierze jezyk przy faktycznym bookingu
 ```
 
 ---

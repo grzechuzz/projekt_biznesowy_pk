@@ -545,12 +545,13 @@ Przy starcie aplikacji `DataSeeder` automatycznie seeduje dane krakowskich atrak
 
 Constrainty sa definiowane na `AttractionVariant` (modul AttractionDefinition) i przenoszone na `CatalogEntry` jako `BookingConstraint` przy tworzeniu instancji w katalogu. Walidacja odbywa sie w `SelectionSessionService.AddItemAsync()`:
 
-| Typ constraintu | Co waliduje | Skad dane |
+| Typ constraintu | Co waliduje | Zachowanie |
 |---|---|---|
-| `RequiredDaysAhead` | (data podrozy - dzis) >= wymagane dni | `session.TravelDateRange.From` |
-| `Range` (group_size) | min <= session.GroupSize <= max | `session.GroupSize` |
-| `Min` (group_size) | session.GroupSize >= min | `session.GroupSize` |
-| `Max` (group_size) | session.GroupSize <= max | `session.GroupSize` |
-| `OneOf` | informuje o wymaganych wyborach | constraint.AllowedValues |
+| `RequiredDaysAhead` | (data podrozy - dzis) >= wymagane dni | **Blokuje** dodanie (DomainException) |
+| `Range` (group_size) | min <= session.GroupSize <= max | **Blokuje** dodanie (DomainException) |
+| `Min` (group_size) | session.GroupSize >= min | **Blokuje** dodanie (DomainException) |
+| `Max` (group_size) | session.GroupSize <= max | **Blokuje** dodanie (DomainException) |
+| Brak biletow (Availability) | IsAvailable == false | **Blokuje** dodanie (DomainException) |
+| `OneOf` (np. jezyk) | informuje o wymaganych wyborach | **Ostrzezenie** - issue zwracany w odpowiedzi, atrakcja dodana (wybor jezyka nastepuje przy bookingu) |
 
-Naruszenie constraintu generuje `SelectionIssue` z typem `ConstraintViolation`. Atrakcja jest dodawana do sesji mimo naruszen - issues sa ostrzezeniami, nie blokerami.
+Hard constraint violations (group_size, RequiredDaysAhead, brak biletow) rzucaja `DomainException` i blokuja dodanie atrakcji do sesji. `OneOf` (np. jezyk wycieczki) jest soft issuem - uzytkownik wybiera opcje przy bookingu, nie przy doborze atrakcji.
