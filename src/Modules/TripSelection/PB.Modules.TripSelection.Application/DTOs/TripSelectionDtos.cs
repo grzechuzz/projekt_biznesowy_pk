@@ -18,6 +18,7 @@ public record SelectionSessionDto(
     string DestinationCity,
     DateOnly TravelFrom,
     DateOnly TravelTo,
+    int GroupSize,
     List<SelectionItemDto> MustHaveItems,
     List<SelectionItemDto> OptionalSuggestions,
     List<Guid> ExcludedIds,
@@ -32,7 +33,7 @@ public record AttractionRelationDto(
     string? Context,
     string? Description);
 
-public record CreateSessionDto(string DestinationCity, DateOnly TravelFrom, DateOnly TravelTo);
+public record CreateSessionDto(string DestinationCity, DateOnly TravelFrom, DateOnly TravelTo, int GroupSize = 1);
 
 public record AddItemToSessionDto(Guid CatalogEntryId);
 

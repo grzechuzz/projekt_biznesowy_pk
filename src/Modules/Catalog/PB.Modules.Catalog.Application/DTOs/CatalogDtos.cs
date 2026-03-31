@@ -8,6 +8,8 @@ public record DiscountDto(string Description, decimal? PercentOff, MoneyDto? Amo
 
 public record PricingPeriodDto(DateOnly From, DateOnly To, MoneyDto Price, List<DiscountDto>? Discounts);
 
+public record BookingConstraintDto(string Type, string Key, decimal? MinValue, decimal? MaxValue, List<string>? AllowedValues);
+
 public record CatalogLocationDto(string City, string? Address);
 
 public record CatalogOpeningHoursDto(TimeOnly Open, TimeOnly Close);
@@ -26,7 +28,8 @@ public record CatalogEntryDto(
     CatalogOpeningHoursDto? OpeningHours,
     bool IsEvent,
     string Status,
-    List<PricingPeriodDto> PricingPeriods);
+    List<PricingPeriodDto> PricingPeriods,
+    List<BookingConstraintDto> Constraints);
 
 public record CreateCatalogEntryDto(
     Guid AttractionDefinitionId,
@@ -37,7 +40,8 @@ public record CreateCatalogEntryDto(
     CatalogLocationDto Location,
     DateRangeDto DateRange,
     CatalogOpeningHoursDto? OpeningHours,
-    bool IsEvent);
+    bool IsEvent,
+    List<BookingConstraintDto>? Constraints);
 
 public record UpdateCatalogEntryDto(
     string Name,

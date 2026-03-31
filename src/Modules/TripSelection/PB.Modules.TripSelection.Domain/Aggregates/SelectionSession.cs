@@ -8,6 +8,7 @@ public class SelectionSession : AggregateRoot
 {
     public string DestinationCity { get; }
     public DateRange TravelDateRange { get; }
+    public int GroupSize { get; }
     private readonly List<SelectionItem> _mustHaveItems = new();
     private readonly List<SelectionItem> _optionalSuggestions = new();
     private readonly HashSet<Guid> _excludedIds = new();
@@ -19,11 +20,13 @@ public class SelectionSession : AggregateRoot
     public IReadOnlySet<Guid> ExcludedIds => _excludedIds;
     public IReadOnlyList<SelectionIssue> Issues => _issues.AsReadOnly();
 
-    public SelectionSession(string destinationCity, DateRange travelDateRange)
+    public SelectionSession(string destinationCity, DateRange travelDateRange, int groupSize = 1)
     {
         if (string.IsNullOrWhiteSpace(destinationCity)) throw new DomainException("Destination city cannot be empty");
+        if (groupSize < 1) throw new DomainException("Group size must be at least 1");
         DestinationCity = destinationCity.Trim();
         TravelDateRange = travelDateRange ?? throw new DomainException("Travel date range cannot be null");
+        GroupSize = groupSize;
         CreatedAt = DateTime.UtcNow;
     }
 

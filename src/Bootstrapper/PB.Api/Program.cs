@@ -1,3 +1,4 @@
+using PB.Api;
 using PB.Modules.AttractionDefinition.Api;
 using PB.Modules.AttractionDefinition.Infrastructure;
 using PB.Modules.Catalog.Api;
@@ -28,6 +29,14 @@ builder.Services.AddTripSelectionModule();
 
 var app = builder.Build();
 
+// Seed demo data on startup
+using (var scope = app.Services.CreateScope())
+{
+    var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(scope.ServiceProvider);
+    await seeder.SeedAsync();
+}
+
+app.UseMiddleware<PB.Api.ExceptionMiddleware>();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.MapControllers();

@@ -173,7 +173,7 @@ Instancje atrakcji dostepne w konkretnym czasie. CatalogEntry **MA stany** (Avai
 
 | Klasa | Opis |
 |---|---|
-| `CatalogEntry` | AttractionDefinitionId, VariantId?, Name, Description, Tags, Location, DateRange, OpeningHours?, IsEvent, Status, PricingPeriods |
+| `CatalogEntry` | AttractionDefinitionId, VariantId?, Name, Description, Tags, Location, DateRange, OpeningHours?, IsEvent, Status, PricingPeriods, **Constraints** |
 
 Metody:
 - `Update(name, desc, location, dateRange, isEvent)` - nie mozna updatowac cancelled entry
@@ -191,6 +191,7 @@ Metody:
 | `DateRange` | From, To (DateOnly) | From <= To. Metody: Contains(date), Overlaps(other) |
 | `PricingPeriod` | DateRange, Price (Money), Discounts (List\<Discount\>) | DateRange i Price wymagane |
 | `Discount` | Description, PercentOff?, AmountOff? (Money), Condition? | Min 1 z PercentOff/AmountOff, PercentOff 0-100 |
+| `BookingConstraint` | Type, Key, MinValue?, MaxValue?, AllowedValues | Type i Key wymagane. Nosi constrainty z AttractionVariant - walidowane w TripSelection |
 
 **Enum:** `CatalogEntryStatus` { Available, SoldOut, Cancelled, Upcoming }
 
@@ -289,7 +290,7 @@ Sesja doboru atrakcji do wycieczki. Uzytkownik dodaje atrakcje z katalogu - modu
 
 | Klasa | Opis |
 |---|---|
-| `SelectionSession` | DestinationCity, TravelDateRange, MustHaveItems, OptionalSuggestions, ExcludedIds, Issues, CreatedAt |
+| `SelectionSession` | DestinationCity, TravelDateRange, **GroupSize**, MustHaveItems, OptionalSuggestions, ExcludedIds, Issues, CreatedAt |
 | `AttractionRelation` | SourceId, TargetId, Type (RelationType), Context?, Description? |
 
 `SelectionSession` - metody:
@@ -327,14 +328,20 @@ Sesja doboru atrakcji do wycieczki. Uzytkownik dodaje atrakcje z katalogu - modu
 ```
 1. Pobierz sesje z repo
 2. Pobierz info o CatalogEntry przez ICatalogEntryQuery (cross-module)
+   -> CatalogEntrySnapshot zawiera Constraints
 3. Sprawdz dostepnosc przez IAvailabilityQuery (cross-module)
    -> brak biletow = Issue(ConstraintViolation)
-4. Pobierz relacje dla AttractionDefinitionId (+ VariantId) z repo
-5. RelationValidationService.ValidateNewItem(...) -> issues
-6. Stworz SelectionItem, dodaj do MustHaveItems
-7. GetSuggestions -> pobierz dane z katalogu, sprawdz dostepnosc -> OptionalSuggestions
-8. GetExclusions -> ExcludedIds
-9. Zapisz sesje
+4. Waliduj BookingConstraints z CatalogEntry:
+   -> RequiredDaysAhead: (TravelFrom - dzis) >= minValue?
+   -> Range/Min/Max group_size: session.GroupSize w dozwolonym zakresie?
+   -> OneOf: informuje o wymaganych wyborach (np. jezyk)
+5. Pobierz relacje dla AttractionDefinitionId (+ VariantId) z repo
+   -> takze dla istniejacych items (by sprawdzic "existing excludes new")
+6. RelationValidationService.ValidateNewItem(...) -> issues
+7. Stworz SelectionItem, dodaj do MustHaveItems
+8. GetSuggestions -> szukaj CatalogEntry po AttractionDefinitionId, sprawdz dostepnosc -> OptionalSuggestions
+9. GetExclusions -> ExcludedIds
+10. Zapisz sesje
 ```
 
 ### Cross-module porty (Application layer)
@@ -345,7 +352,9 @@ Sesja doboru atrakcji do wycieczki. Uzytkownik dodaje atrakcje z katalogu - modu
 | `IAvailabilityQuery` | `AvailabilityQueryAdapter` | `IAvailabilityService` z Availability |
 
 `CatalogEntrySnapshot` - record w TripSelection.Application mapowany z CatalogEntryDto:
-Id, Name, Description, AttractionDefinitionId, VariantId?, Tags, City, IsEvent, Status
+Id, Name, Description, AttractionDefinitionId, VariantId?, Tags, City, IsEvent, Status, **Constraints**
+
+`ConstraintSnapshot` - record: Type, Key, MinValue?, MaxValue?, AllowedValues
 
 ### REST API
 
@@ -419,7 +428,9 @@ Dodaje "Wawel Zbrojownia" do sesji:
 ```
 src/
 ├── Bootstrapper/PB.Api/
-│   ├── Program.cs                    (rejestracja modulow, Swagger, MapControllers)
+│   ├── Program.cs                    (rejestracja modulow, Swagger, MapControllers, DataSeeder)
+│   ├── DataSeeder.cs                 (seedowanie danych demo: atrakcje Krakowa z cenami, biletami, relacjami)
+│   ├── ExceptionMiddleware.cs        (DomainException -> 400 Bad Request z JSON)
 │   └── PB.Api.csproj                 (ref: wszystkie Api + Infrastructure)
 │
 ├── Shared/PB.Shared/
@@ -451,7 +462,7 @@ src/
 │   │   │   ├── Aggregates/           CatalogEntry.cs
 │   │   │   ├── Enums/                CatalogEntryStatus
 │   │   │   ├── Ports/                ICatalogEntryRepository
-│   │   │   └── ValueObjects/         CatalogLocation, CatalogOpeningHours, DateRange, PricingPeriod, Discount
+│   │   │   └── ValueObjects/         CatalogLocation, CatalogOpeningHours, DateRange, PricingPeriod, Discount, BookingConstraint
 │   │   ├── Application/
 │   │   │   ├── DTOs/                 CatalogDtos.cs (wszystkie DTOs w jednym pliku)
 │   │   │   └── Services/             ICatalogService + impl
@@ -511,3 +522,35 @@ Kontrolery ladowane dynamicznie przez `AddApplicationPart(typeof(XModule).Assemb
 ## Infrastruktura
 
 Wszystkie repozytoria uzywaja `ConcurrentDictionary<Guid, T>` (thread-safe, in-memory). Gotowe do podmiany na implementacje z baza danych - wystarczy zamienic rejestracje w `Extensions.cs`.
+
+---
+
+## DataSeeder (dane demo)
+
+Przy starcie aplikacji `DataSeeder` automatycznie seeduje dane krakowskich atrakcji:
+
+**8 definicji**: Wawel Castle (3 warianty: State Rooms, Armoury, Dragon's Den), St. Mary's Basilica, Sukiennice, Concert at Tauron Arena, Kazimierz Walking Tour, Pijalnia Wodki i Piwa, Wieliczka Salt Mine
+
+**1 pakiet**: Wawel Full Experience (PickN(2))
+
+**9 catalog entries** z cennikami (rozne ceny w roznych okresach, znizki studenckie) i **constraintami** (group_size, booking_days_ahead, language)
+
+**9 ticket pools** z roznymi pojemnosciami
+
+**5 relacji**: State Rooms SUGGESTS Armoury, Armoury SUGGESTS Dragon's Den, Wieliczka EXCLUDES Tauron, Kazimierz SUGGESTS Pijalnia, St. Mary's SUGGESTS Sukiennice
+
+---
+
+## Walidacja constraintow
+
+Constrainty sa definiowane na `AttractionVariant` (modul AttractionDefinition) i przenoszone na `CatalogEntry` jako `BookingConstraint` przy tworzeniu instancji w katalogu. Walidacja odbywa sie w `SelectionSessionService.AddItemAsync()`:
+
+| Typ constraintu | Co waliduje | Skad dane |
+|---|---|---|
+| `RequiredDaysAhead` | (data podrozy - dzis) >= wymagane dni | `session.TravelDateRange.From` |
+| `Range` (group_size) | min <= session.GroupSize <= max | `session.GroupSize` |
+| `Min` (group_size) | session.GroupSize >= min | `session.GroupSize` |
+| `Max` (group_size) | session.GroupSize <= max | `session.GroupSize` |
+| `OneOf` | informuje o wymaganych wyborach | constraint.AllowedValues |
+
+Naruszenie constraintu generuje `SelectionIssue` z typem `ConstraintViolation`. Atrakcja jest dodawana do sesji mimo naruszen - issues sa ostrzezeniami, nie blokerami.

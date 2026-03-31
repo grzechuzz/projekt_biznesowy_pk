@@ -206,13 +206,15 @@ Admin definiuje relacje miedzy atrakcjami/wariantami:
 Uzytkownik tworzy `SelectionSession` podajac:
 - Miasto docelowe
 - Daty podrozy (od-do)
+- **Wielkosc grupy** (GroupSize) - uzywana do walidacji constraintow
 
 Potem dodaje atrakcje z katalogu. Przy kazdym dodaniu system:
 
 1. **Sprawdza dostepnosc biletow** - pyta modul Availability czy sa wolne bilety
-2. **Waliduje relacje** - czy nowa atrakcja nie wyklucza istniejacych (i na odwrot), czy wymagane zaleznosci sa spelnione
-3. **Generuje sugestie** - na podstawie relacji SUGGESTS
-4. **Generuje wykluczenia** - co trzeba wykluczyc z przyszlych propozycji
+2. **Waliduje constrainty** z CatalogEntry - np. czy grupa sie miesci w limicie (group_size), czy jest wystarczajaco duzo czasu na rezerwacje (booking_days_ahead), czy trzeba wybrac jezyk (language OneOf)
+3. **Waliduje relacje** - czy nowa atrakcja nie wyklucza istniejacych (i na odwrot), czy wymagane zaleznosci sa spelnione
+4. **Generuje sugestie** - na podstawie relacji SUGGESTS, szuka odpowiednich CatalogEntry
+5. **Generuje wykluczenia** - co trzeba wykluczyc z przyszlych propozycji
 
 ### Dwie listy
 
@@ -229,39 +231,43 @@ TripSelection nie importuje bezposrednio klas z Catalog i Availability. Zamiast 
 
 W warstwie Infrastructure sa **adaptery** ktore implementuja te porty delegujac do prawdziwych serwisow Catalog i Availability. Dzieki temu domena TripSelection jest niezalezna.
 
-### Przyklad uzycia
+### Przyklad uzycia (z seedowanych danych)
 
 ```
-1. Admin wczesniej zdefiniowl relacje:
-   - Wawel Zbrojownia PL  EXCLUDES  Wawel Zbrojownia EN  (context: "language")
-   - Wawel Zbrojownia      SUGGESTS  Wawel Podziemia
-   - Wawel Pietra II       REQUIRES  Wawel Pietra I
+1. Admin zdefiniowl relacje:
+   - Wawel State Rooms  SUGGESTS  Wawel Armoury
+   - Wawel Armoury      SUGGESTS  Dragon's Den
+   - Wieliczka           EXCLUDES  Tauron Concert  (caly dzien, nie da sie obu)
+   - Kazimierz Tour      SUGGESTS  Pijalnia Wodki i Piwa
+   - St. Mary's          SUGGESTS  Sukiennice
 
-2. Uzytkownik tworzy sesje: Krakow, 17-19.03.2025
+2. Uzytkownik tworzy sesje: Krakow, 10-14.04.2026, grupa 4 osoby
 
-3. Dodaje "Wawel - Zbrojownia PL" do sesji:
-   -> System sprawdza bilety: sa dostepne (OK)
-   -> Sprawdza relacje: brak konfliktow (OK)
-   -> Sugestie: Wawel Podziemia
-   -> Wykluczenia: Wawel Zbrojownia EN
-
-   Wynik:
-     MustHave: [Wawel Zbrojownia PL]
-     Optional: [Wawel Podziemia]
-     Excluded: [Wawel Zbrojownia EN]
-     Issues: []
-
-4. Dodaje "Wawel - Pietra II" do sesji:
-   -> System sprawdza bilety: sa dostepne (OK)
-   -> Sprawdza relacje: REQUIRES Wawel Pietra I - ale go nie ma w sesji!
+3. Dodaje "Kazimierz Walking Tour" do sesji:
+   -> Sprawdza bilety: dostepne (OK)
+   -> Sprawdza constrainty: group_size Range(2,12) - grupa 4 OK
+   -> Constraint OneOf language -> issue informacyjny
+   -> Relacja SUGGESTS -> sugeruje Pijalnie
 
    Wynik:
-     MustHave: [Wawel Zbrojownia PL, Wawel Pietra II]
-     Optional: [Wawel Podziemia]
-     Excluded: [Wawel Zbrojownia EN]
-     Issues: ["Wawel Pietra II wymaga Wawel Pietra I"]
+     MustHave: [Kazimierz Tour]
+     Optional: [Pijalnia Wodki i Piwa]
+     Issues: ["requires choosing: polish, english (for 'language')"]
 
-5. Dodaje "Wawel - Pietra I" -> issue znika
+4. Dodaje "Wieliczka Salt Mine" do sesji:
+   -> Constrainty: group_size Range(1,35) OK, booking_days_ahead 3 -> OK (10 dni)
+   -> Relacja EXCLUDES Tauron Concert -> dodaje do ExcludedIds
+
+5. Dodaje "Tauron Concert" do sesji:
+   -> System wykrywa CONFLICT: Wieliczka juz w sesji wyklucza Tauron
+   -> Issue: [Conflict] "Wieliczka in your selection conflicts with Tauron"
+   -> Atrakcja JEST dodana do must-have ale z ostrzezeniem
+
+6. Scenariusz z naruszeniem constraintow (grupa 20, jutro):
+   -> Dodaje Wawel State Rooms (group_size max 15, booking 2 dni):
+   -> Issues: ["allows max group size 15 (your group: 20)",
+               "requires booking 2 days ahead (you have 0 days)",
+               "requires choosing: polish, english, german (for 'language')"]
 ```
 
 ---
@@ -316,12 +322,15 @@ FAZA 5: DOBOR ATRAKCJI (uzytkownik)
 =========================================
 TripSelection (czesc uzytkownika)
   |
-  |-- Tworzy sesje: Krakow, 17-19.03
+  |-- Tworzy sesje: Krakow, 10-14.04, grupa 4 osoby
   |-- Dodaje atrakcje z katalogu
-  |     -> system waliduje, sugeruje, wyklucza
+  |     -> system waliduje constrainty (group_size, booking_days_ahead, language)
+  |     -> waliduje relacje (excludes, requires)
+  |     -> generuje sugestie i wykluczenia
   |-- Dostaje dwie listy:
   |     MustHave: [to co dodal + wymagane]
   |     Optional: [sugestie]
+  |-- Issues: lista problemow (constraint violations, konflikty)
   |-- Moze iterowac: dodawac, usuwac, dopoki jest zadowolony
 
 

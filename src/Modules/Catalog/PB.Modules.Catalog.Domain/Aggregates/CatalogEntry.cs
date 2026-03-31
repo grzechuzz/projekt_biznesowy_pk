@@ -17,12 +17,15 @@ public class CatalogEntry : AggregateRoot
     public bool IsEvent { get; private set; }
     public CatalogEntryStatus Status { get; private set; } = CatalogEntryStatus.Available;
     private readonly List<PricingPeriod> _pricingPeriods = new();
+    private readonly List<BookingConstraint> _constraints = new();
 
     public IReadOnlySet<Tag> Tags => _tags;
     public IReadOnlyList<PricingPeriod> PricingPeriods => _pricingPeriods.AsReadOnly();
+    public IReadOnlyList<BookingConstraint> Constraints => _constraints.AsReadOnly();
 
     public CatalogEntry(Guid attractionDefinitionId, Guid? variantId, string name, string description,
-        CatalogLocation location, DateRange dateRange, bool isEvent, IEnumerable<Tag>? tags = null)
+        CatalogLocation location, DateRange dateRange, bool isEvent, IEnumerable<Tag>? tags = null,
+        IEnumerable<BookingConstraint>? constraints = null)
     {
         if (attractionDefinitionId == Guid.Empty) throw new DomainException("AttractionDefinitionId cannot be empty");
         if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Name cannot be empty");
@@ -34,6 +37,7 @@ public class CatalogEntry : AggregateRoot
         DateRange = dateRange ?? throw new DomainException("DateRange cannot be null");
         IsEvent = isEvent;
         if (tags != null) foreach (var tag in tags) _tags.Add(tag);
+        if (constraints != null) foreach (var c in constraints) _constraints.Add(c);
     }
 
     public void Update(string name, string description, CatalogLocation location, DateRange dateRange, bool isEvent)

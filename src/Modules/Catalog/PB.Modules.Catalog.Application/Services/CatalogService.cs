@@ -4,6 +4,7 @@ using PB.Modules.Catalog.Domain.Aggregates;
 using PB.Modules.Catalog.Domain.Enums;
 using PB.Modules.Catalog.Domain.Ports;
 using PB.Modules.Catalog.Domain.ValueObjects;
+using BookingConstraintVO = PB.Modules.Catalog.Domain.ValueObjects.BookingConstraint;
 
 namespace PB.Modules.Catalog.Application.Services;
 
@@ -21,11 +22,13 @@ public class CatalogService : ICatalogService
         var location = new CatalogLocation(dto.Location.City, dto.Location.Address);
         var dateRange = new DateRange(dto.DateRange.From, dto.DateRange.To);
         var tags = dto.Tags?.Select(t => new Tag(t.Name, t.Group));
+        var constraints = dto.Constraints?.Select(c =>
+            new BookingConstraintVO(c.Type, c.Key, c.MinValue, c.MaxValue, c.AllowedValues));
 
         var entry = new CatalogEntry(
             dto.AttractionDefinitionId, dto.VariantId,
             dto.Name, dto.Description,
-            location, dateRange, dto.IsEvent, tags);
+            location, dateRange, dto.IsEvent, tags, constraints);
 
         if (dto.OpeningHours != null)
             entry.SetOpeningHours(new CatalogOpeningHours(dto.OpeningHours.Open, dto.OpeningHours.Close));
@@ -38,6 +41,12 @@ public class CatalogService : ICatalogService
     {
         var entry = await _repository.GetByIdAsync(id);
         return entry == null ? null : MapToDto(entry);
+    }
+
+    public async Task<IEnumerable<CatalogEntryDto>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    {
+        var entries = await _repository.GetByAttractionDefinitionIdAsync(attractionDefinitionId);
+        return entries.Select(MapToDto);
     }
 
     public async Task<IEnumerable<CatalogEntryDto>> SearchAsync(string? city, DateOnly? from, DateOnly? to, IEnumerable<string>? tags, string? status)
@@ -171,6 +180,9 @@ public class CatalogService : ICatalogService
                     d.Description, d.PercentOff,
                     d.AmountOff != null ? new MoneyDto(d.AmountOff.Amount, d.AmountOff.Currency) : null,
                     d.Condition)).ToList()
+            )).ToList(),
+            e.Constraints.Select(c => new BookingConstraintDto(
+                c.Type, c.Key, c.MinValue, c.MaxValue, c.AllowedValues.ToList()
             )).ToList());
     }
 }

@@ -16,19 +16,26 @@ public class CatalogEntryQueryAdapter : ICatalogEntryQuery
     public async Task<CatalogEntrySnapshot?> GetByIdAsync(Guid id)
     {
         var dto = await _catalogService.GetByIdAsync(id);
-        if (dto == null) return null;
+        return dto == null ? null : MapToSnapshot(dto);
+    }
 
+    public async Task<IEnumerable<CatalogEntrySnapshot>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    {
+        var dtos = await _catalogService.GetByAttractionDefinitionIdAsync(attractionDefinitionId);
+        return dtos.Select(MapToSnapshot);
+    }
+
+    private static CatalogEntrySnapshot MapToSnapshot(Catalog.Application.DTOs.CatalogEntryDto dto)
+    {
         var tags = new HashSet<Tag>(dto.Tags.Select(t => new Tag(t.Name, t.Group)));
+        var constraints = dto.Constraints
+            .Select(c => new ConstraintSnapshot(c.Type, c.Key, c.MinValue, c.MaxValue,
+                (IReadOnlyList<string>)(c.AllowedValues ?? new List<string>())))
+            .ToList();
 
         return new CatalogEntrySnapshot(
-            dto.Id,
-            dto.Name,
-            dto.Description,
-            dto.AttractionDefinitionId,
-            dto.VariantId,
-            tags,
-            dto.Location.City,
-            dto.IsEvent,
-            dto.Status);
+            dto.Id, dto.Name, dto.Description,
+            dto.AttractionDefinitionId, dto.VariantId,
+            tags, dto.Location.City, dto.IsEvent, dto.Status, constraints);
     }
 }
