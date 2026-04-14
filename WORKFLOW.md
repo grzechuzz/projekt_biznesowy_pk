@@ -1,345 +1,333 @@
-# Jak dzialaja moduly - opis i workflow
+# Workflow projektu
 
-## Ogolna idea
+Ten dokument opisuje, jak system jest uzywany od poczatku do konca na poziomie biznesowym i API.
 
-System pozwala na pelny cykl zycia atrakcji turystycznej: od stworzenia jej "przepisu" (definicji), przez wystawienie w katalogu z cenami i datami, zarzadzanie biletami, az po dobieranie atrakcji do wycieczki z walidacja czy sie nie wykluczaja.
+## 1. Utworzenie komponentu atrakcji
 
----
-
-## Modul 1: AttractionDefinition
-
-### Cel
-
-Stworzenie **archetypu** atrakcji - definicji, ktora jest "przepisem" na produkt. To nie jest konkretna oferta w sklepie, to szablon z ktorego pozniej powstaja oferty (CatalogEntry).
-
-### Jak dziala
-
-Admin tworzy definicje atrakcji podajac:
-- **Nazwe i opis** (np. "Wawel")
-- **Tagi** - dowolne etykiety kategoryzujace atrakcje (np. typ:landmark, tematyka:historia, loc:krakow). Tagow moze byc duzo - to glowny mechanizm kategoryzacji zamiast sztywnych enumow
-- **Lokalizacje** - miasto, adres, opcjonalnie wspolrzedne GPS
-- **Godziny otwarcia** i **dostepnosc sezonowa** (np. tylko lato)
-
-### Warianty
-
-Jedna atrakcja moze miec wiele **wariantow**. Przyklad Wawelu:
-- Zbrojownia (45 min, grupy 1-15 osob)
-- Podziemia (60 min, grupy 1-10, trzeba rezerwowac 3 dni wczesniej)
-- Pietra I i II (90 min, grupy 1-20, dostepne po polsku i angielsku)
-
-Kazdy wariant ma wlasne:
-- Dodatkowe tagi
-- Constrainty (ograniczenia) - np. rozmiar grupy, ile dni wczesniej trzeba zarezerwowac, w jakich jezykach dostepne
-- Czas trwania
-
-### Pakiety
-
-`AttractionPackage` pozwala grupowac atrakcje/warianty. Np. "Wawel kompletny - wybierz 2 z 3 wariantow". Pakiet ma `SelectionRule`:
-- **All** - trzeba wziac wszystko z pakietu
-- **PickN(n)** - wybierasz n elementow z dostepnych
-
-### Composite Pattern
-
-Definicja i Pakiet dziedzicza po wspolnej abstrakcji `AttractionComponent`. Dzieki temu reszta systemu (i przyszly modul planowania trasy) moze traktowac je jednolicie - nie musi wiedziec czy operuje na pojedynczej atrakcji czy na pakiecie.
-
-### Flaga IsComplete
-
-Definicja nie ma stanow (Draft/Published/Archived). Zamiast tego ma flage `IsComplete` - jest ustawiona kiedy definicja ma nazwe, przynajmniej jeden tag i lokalizacje. To informacja dla admina "ta definicja jest gotowa do uzycia w katalogu".
-
-### Przyklad uzycia
-
-```
-1. Admin tworzy AttractionDefinition "Wawel"
-2. Dodaje tagi: typ:landmark, tematyka:historia, tematyka:kultura
-3. Ustawia lokalizacje: Krakow, Wawel 5
-4. Dodaje wariant "Zbrojownia" z constraintem group_size Range 1-15
-5. Dodaje wariant "Podziemia" z constraintem RequiredDaysAhead(3)
-6. Tworzy AttractionPackage "Wawel 2 z 3" z regula PickN(2)
-7. Dodaje do pakietu ID wariantow: zbrojownia, podziemia, pietra
--> Definicja jest kompletna (IsComplete = true), gotowa do katalogu
-```
-
----
-
-## Modul 2: Catalog
-
-### Cel
-
-Stworzenie **konkretnej instancji** atrakcji dostepnej w okreslonym czasie z konkretnymi cenami. O ile definicja to "przepis" (Wawel jako atrakcja), to CatalogEntry to "oferta" (Wawel - Zbrojownia, lato 2025, bilet 30 PLN).
-
-### Jak dziala
-
-Admin tworzy CatalogEntry podajac:
-- **Referencje do definicji** (AttractionDefinitionId) i opcjonalnie do wariantu (VariantId)
-- **Nazwe i opis** konkretnej oferty
-- **Tagi** - kopiowane z definicji + ewentualnie dodatkowe
-- **Lokalizacje**
-- **Zakres dat** - kiedy ta oferta obowiazuje (np. 2025-06-01 do 2025-08-31)
-- **Czy to event** (jednorazowy, np. koncert) czy stala atrakcja (np. muzeum)
-- **Godziny otwarcia**
-
-### Dynamiczny cennik
-
-Kluczowa funkcja katalogu - ceny moga sie zmieniac w czasie. CatalogEntry ma liste `PricingPeriod`, kazdy z:
-- Zakres dat (np. 01.06-30.06)
-- Cena (np. 30 PLN)
-- Znizki (np. studenci -50%, dzieci za darmo)
+Pierwszy krok to stworzenie `AttractionComponent` typu `attraction`.
 
 Przyklad:
-```
-Wawel - Zbrojownia, lato 2025:
-  01.06 - 30.06:  30 PLN  (student: -50%)
-  01.07 - 31.07:  35 PLN
-  01.08 - 31.08:  35 PLN  (dziecko: za darmo)
-```
+- admin dodaje pojedyncza atrakcje, np. `Wieliczka Salt Mine - Tourist Route`
+- ustawia nazwe i opis
+- dodaje tagi
+- ustawia lokalizacje
+- ustawia godziny otwarcia
 
-Okresy nie moga na siebie nachodzic. Mozna sprawdzic cene na konkretny dzien metoda `GetPriceForDate(date)`.
+Przyklad payload:
 
-### Stany instancji
-
-CatalogEntry MA stany (w przeciwienstwie do definicji):
-- **Available** - dostepna, mozna rezerwowac
-- **SoldOut** - wyprzedana
-- **Cancelled** - anulowana (nie mozna juz updatowac)
-- **Upcoming** - zapowiedziana, jeszcze nie dostepna
-
-### Wyszukiwanie
-
-Catalog pozwala szukac po: miescie, zakresie dat, tagach, statusie. Dzieki temu mozna latwo znalezc "co jest dostepne w Krakowie w marcu z tagiem historia".
-
-### Przyklad uzycia
-
-```
-1. Admin tworzy CatalogEntry z AttractionDefinitionId = wawel_id, VariantId = zbrojownia_id
-2. Ustawia nazwe "Wawel - Zbrojownia (lato 2025)"
-3. Ustawia zakres dat: 2025-06-01 do 2025-08-31
-4. Dodaje PricingPeriod: 2025-06-01..2025-06-30, cena 30 PLN, znizka student 50%
-5. Dodaje PricingPeriod: 2025-07-01..2025-08-31, cena 35 PLN
-6. Status: Available
--> Oferta widoczna w katalogu, mozna na nia rezerwowac bilety
-```
-
----
-
-## Modul 3: Availability
-
-### Cel
-
-Zarzadzanie **pulami biletow** organizatora. Organizator kupuje pewna ilosc biletow na dana atrakcje (CatalogEntry) i chce zarzadzac ich dostepnoscia - ile zostalo, kto zarezerwowl, czy rezerwacja jest potwierdzona czy jeszcze miekka.
-
-### Jak dziala
-
-Admin tworzy `TicketPool` powiazany z CatalogEntry:
-- **Pojemnosc** (TotalCapacity) - ile biletow lacznie
-- Opcjonalnie powiazanie z wariantem (VariantId)
-
-### Rezerwacje
-
-System obsluguje dwa typy rezerwacji:
-- **Pending (miekka)** - wstepna rezerwacja z czasem wygasniecia. Jesli nie zostanie potwierdzona przed ExpiresAt, automatycznie wygasa
-- **Confirmed (twarda)** - potwierdzona, bilety naleza do rezerwujacego
-
-Cykl zycia rezerwacji:
-```
-Reserve(ilosc, expiresAt)  ->  Pending
-                                 |
-                    +------------+------------+
-                    |            |            |
-              Confirm()     Cancel()    ExpireOutdated()
-                    |            |            |
-                    v            v            v
-               Confirmed    Cancelled     Expired
+```json
+{
+  "type": "attraction",
+  "name": "Wieliczka Salt Mine - Tourist Route",
+  "description": "Classic underground route through the mine.",
+  "tags": [
+    { "name": "mine", "group": "type" },
+    { "name": "wieliczka", "group": "loc" }
+  ],
+  "location": {
+    "city": "Wieliczka",
+    "address": "ul. Daniłowicza 10",
+    "latitude": 49.9833,
+    "longitude": 20.0553
+  },
+  "openingHours": {
+    "open": "08:00:00",
+    "close": "17:00:00"
+  },
+  "selectionRule": null,
+  "componentIds": null
+}
 ```
 
-### Pojemnosc
+Endpoint:
 
-TicketPool dynamicznie oblicza:
-- **PendingCount** - ile biletow w miekkich rezerwacjach
-- **ConfirmedCount** - ile potwierdzonych
-- **AvailableCount** = TotalCapacity - PendingCount - ConfirmedCount
-- **IsAvailable** - czy sa wolne bilety
-
-Admin moze zwiekszyc lub zmniejszyc pojemnosc (ale nie ponizej aktywnych rezerwacji).
-
-### Przyklad uzycia
-
-```
-1. Admin tworzy TicketPool: CatalogEntryId = zbrojownia_lato_id, TotalCapacity = 100
-2. Klient rezerwuje 5 biletow (Pending, wygasa za 30 min)
-   -> AvailableCount: 95, PendingCount: 5
-3. Klient potwierdza rezerwacje
-   -> AvailableCount: 95, ConfirmedCount: 5
-4. Inny klient rezerwuje 3 bilety ale nie potwierdza w czasie
-   -> system wywoluje ExpireOutdated() -> rezerwacja wygasa
-   -> AvailableCount wraca do 95
-5. Admin zwieksza pojemnosc o 50
-   -> TotalCapacity: 150, AvailableCount: 145
+```text
+POST /api/attraction-components
 ```
 
----
+## 2. Utworzenie pakietu
 
-## Modul 4: TripSelection
+Jesli kilka atrakcji ma byc traktowanych jako zestaw, tworzy sie komponent typu `package`.
 
-### Cel
+Pakiet:
+- ma nazwe i opis
+- ma `SelectionRule`
+- przechowuje liste `ComponentIds`
 
-Budowanie **sesji doboru atrakcji** do wycieczki. Uzytkownik dodaje atrakcje z katalogu do sesji, a modul pilnuje zeby:
-1. Wybrane atrakcje nie wykluczaly sie nawzajem
-2. Wymagane zaleznosci byly spelnione
-3. Bilety byly dostepne
-4. Proponowal powiazane atrakcje
+Przyklad:
+- pakiet Wawelu grupuje `State Rooms`, `Armoury` i `Dragon's Den`
+- regula `PickN(2)` oznacza, ze pakiet wymaga wybrania 2 z 3 elementow
 
-Wynik to dwie listy: **must-have** (to co uzytkownik explicite dodal + wymagane) i **optional** (sugestie).
+Przyklad payload:
 
-### Relacje miedzy atrakcjami
-
-Admin definiuje relacje miedzy atrakcjami/wariantami:
-
-| Typ | Co robi | Przyklad |
-|---|---|---|
-| **Excludes** | Dodanie A wyklucza B | Audiobook po polsku wyklucza audiobook po angielsku (ta sama tresc, inny jezyk) |
-| **Suggests** | Dodanie A sugeruje B | Zwiedzanie Wawelu sugeruje Sukiennice (blisko, te same tagi) |
-| **Requires** | Dodanie A wymaga B | Wawel Pietra II wymaga biletu na Pietra I (trzeba isc kolejno) |
-| **Replaces** | A jest alternatywa dla B | Pelny pakiet Wawelu zastepuje pojedyncze warianty |
-
-### Sesja doboru
-
-Uzytkownik tworzy `SelectionSession` podajac:
-- Miasto docelowe
-- Daty podrozy (od-do)
-- **Wielkosc grupy** (GroupSize) - uzywana do walidacji constraintow
-
-Potem dodaje atrakcje z katalogu. Przy kazdym dodaniu system:
-
-1. **Sprawdza dostepnosc biletow** - pyta modul Availability czy sa wolne bilety; brak biletow **blokuje** dodanie
-2. **Waliduje constrainty** z CatalogEntry - hard constraints (group_size, booking_days_ahead) **blokuja** dodanie rzucajac DomainException; OneOf (np. jezyk) zwraca soft issue - atrakcja dodana, uzytkownik wybiera przy bookingu
-3. **Waliduje relacje** - czy nowa atrakcja nie wyklucza istniejacych (i na odwrot), czy wymagane zaleznosci sa spelnione
-4. **Generuje sugestie** - na podstawie relacji SUGGESTS, szuka odpowiednich CatalogEntry
-5. **Generuje wykluczenia** - co trzeba wykluczyc z przyszlych propozycji
-
-### Dwie listy
-
-- **MustHaveItems** - atrakcje ktore uzytkownik explicite dodal + te wymagane przez relacje REQUIRES
-- **OptionalSuggestions** - propozycje z relacji SUGGESTS (jesli sa dostepne w katalogu i maja bilety)
-- **ExcludedIds** - co jest wykluczone i nie powinno byc proponowane
-- **Issues** - lista miekkich problemow (konflikty relacji, OneOf do wyboru przy bookingu) - NIE zawiera hard constraint violations (te blokuja dodanie)
-
-### Cross-module komunikacja
-
-TripSelection nie importuje bezposrednio klas z Catalog i Availability. Zamiast tego definiuje wlasne interfejsy (porty):
-- `ICatalogEntryQuery` - "daj mi info o tej atrakcji z katalogu"
-- `IAvailabilityQuery` - "czy sa bilety na ta atrakcje?"
-
-W warstwie Infrastructure sa **adaptery** ktore implementuja te porty delegujac do prawdziwych serwisow Catalog i Availability. Dzieki temu domena TripSelection jest niezalezna.
-
-### Przyklad uzycia (z seedowanych danych)
-
-```
-1. Admin zdefiniowl relacje:
-   - Wawel State Rooms  SUGGESTS  Wawel Armoury
-   - Wawel Armoury      SUGGESTS  Dragon's Den
-   - Wieliczka           EXCLUDES  Tauron Concert  (caly dzien, nie da sie obu)
-   - Kazimierz Tour      SUGGESTS  Pijalnia Wodki i Piwa
-   - St. Mary's          SUGGESTS  Sukiennice
-
-2. Uzytkownik tworzy sesje: Krakow, 10-14.04.2026, grupa 4 osoby
-
-3. Dodaje "Kazimierz Walking Tour" do sesji:
-   -> Sprawdza bilety: dostepne (OK)
-   -> Sprawdza constrainty: group_size Range(2,12) - grupa 4 OK
-   -> Constraint OneOf language -> issue informacyjny
-   -> Relacja SUGGESTS -> sugeruje Pijalnie
-
-   Wynik:
-     MustHave: [Kazimierz Tour]
-     Optional: [Pijalnia Wodki i Piwa]
-     Issues: ["requires choosing: polish, english (for 'language')"]
-
-4. Dodaje "Wieliczka Salt Mine" do sesji:
-   -> Constrainty: group_size Range(1,35) OK, booking_days_ahead 3 -> OK (10 dni)
-   -> Relacja EXCLUDES Tauron Concert -> dodaje do ExcludedIds
-
-5. Dodaje "Tauron Concert" do sesji:
-   -> System wykrywa CONFLICT: Wieliczka juz w sesji wyklucza Tauron
-   -> Issue: [Conflict] "Wieliczka in your selection conflicts with Tauron"
-   -> Atrakcja JEST dodana do must-have ale z ostrzezeniem (conflict to soft issue)
-
-6. Scenariusz z naruszeniem constraintow (grupa 20):
-   -> Dodaje Wawel State Rooms (group_size max 15):
-   -> DomainException: "allows max group size 15 (your group: 20)" -> atrakcja NIE jest dodana
-
-7. Scenariusz z OneOf (grupa 4, poprawna):
-   -> Dodaje Wawel State Rooms (group_size OK, booking OK, language OneOf):
-   -> Atrakcja DODANA, issues: ["requires choosing: polish, english, german (for 'language')"]
-   -> Uzytkownik wybierze jezyk przy faktycznym bookingu
+```json
+{
+  "type": "package",
+  "name": "Wawel Full Experience",
+  "description": "Pick any 2 of the 3 Wawel attractions.",
+  "tags": [],
+  "location": null,
+  "openingHours": null,
+  "selectionRule": {
+    "type": "PickN",
+    "count": 2
+  },
+  "componentIds": [
+    "component-id-1",
+    "component-id-2",
+    "component-id-3"
+  ]
+}
 ```
 
----
+Endpoint:
 
-## Pelny workflow end-to-end
-
+```text
+POST /api/attraction-components
 ```
-FAZA 1: DEFINICJA (admin, jednorazowo)
-=========================================
-AttractionDefinition
-  |
-  |-- Tworzy definicje "Wawel"
-  |-- Dodaje tagi, lokalizacje
-  |-- Dodaje warianty: Zbrojownia, Podziemia, Pietra
-  |-- Tworzy pakiet "Wawel 2 z 3" (PickN)
-  |-- IsComplete = true
 
+Mozna tez dopinac komponenty do istniejącego pakietu:
 
-FAZA 2: KATALOG (admin, per sezon/event)
-=========================================
-Catalog
-  |
-  |-- Tworzy CatalogEntry "Wawel Zbrojownia lato 2025"
-  |     z AttractionDefinitionId + VariantId
-  |-- Ustawia daty: 01.06-31.08
-  |-- Dodaje cennik: czerwiec 30 PLN, lipiec-sierpien 35 PLN
-  |-- Status: Available
-  |
-  |-- To samo dla kazdego wariantu/eventu
-
-
-FAZA 3: BILETY (admin/organizator)
-=========================================
-Availability
-  |
-  |-- Tworzy TicketPool dla kazdego CatalogEntry
-  |-- Ustawia pojemnosc (np. 100 biletow)
-  |-- Gotowe do rezerwacji
-
-
-FAZA 4: RELACJE (admin, jednorazowo)
-=========================================
-TripSelection (czesc administracyjna)
-  |
-  |-- Definiuje relacje:
-  |     Zbrojownia PL EXCLUDES Zbrojownia EN
-  |     Zbrojownia SUGGESTS Podziemia
-  |     Pietra II REQUIRES Pietra I
-
-
-FAZA 5: DOBOR ATRAKCJI (uzytkownik)
-=========================================
-TripSelection (czesc uzytkownika)
-  |
-  |-- Tworzy sesje: Krakow, 10-14.04, grupa 4 osoby
-  |-- Dodaje atrakcje z katalogu
-  |     -> system waliduje constrainty (group_size, booking_days_ahead, language)
-  |     -> waliduje relacje (excludes, requires)
-  |     -> generuje sugestie i wykluczenia
-  |-- Dostaje dwie listy:
-  |     MustHave: [to co dodal + wymagane]
-  |     Optional: [sugestie]
-  |-- Issues: lista problemow (constraint violations, konflikty)
-  |-- Moze iterowac: dodawac, usuwac, dopoki jest zadowolony
-
-
-(PRZYSZLOSC: Modul planowania trasy)
-=========================================
-  |-- Bierze MustHave + wybrane Optional
-  |-- Planuje optymalna trase (kolejnosc, godziny, transport)
-  |-- To jest poza obecnym zakresem
+```text
+POST /api/attraction-components/{id}/components/{componentId}
+DELETE /api/attraction-components/{id}/components/{componentId}
 ```
+
+## 3. Wystawienie oferty w katalogu
+
+Komponent sam w sobie nie jest jeszcze sprzedawalna oferta. Zeby stal sie dostepny dla klienta, trzeba zalozyc `CatalogEntry`.
+
+Katalogowa oferta:
+- wskazuje `AttractionComponentId`
+- ma wlasny `DateRange`
+- ma status
+- ma opcjonalne `OpeningHours`
+- moze miec ograniczenia rezerwacji
+
+Przyklad payload:
+
+```json
+{
+  "attractionComponentId": "component-id",
+  "name": "Wieliczka Salt Mine - Tourist Route",
+  "description": "Classic 3.5km underground tour.",
+  "tags": [
+    { "name": "mine", "group": "type" },
+    { "name": "guided-tour", "group": "type" }
+  ],
+  "location": {
+    "city": "Wieliczka",
+    "address": "ul. Daniłowicza 10"
+  },
+  "dateRange": {
+    "from": "2026-04-01",
+    "to": "2026-06-30"
+  },
+  "openingHours": {
+    "open": "08:00:00",
+    "close": "17:00:00"
+  },
+  "isEvent": false,
+  "constraints": [
+    {
+      "type": "Range",
+      "key": "group_size",
+      "minValue": 1,
+      "maxValue": 35,
+      "allowedValues": []
+    }
+  ]
+}
+```
+
+Endpoint:
+
+```text
+POST /api/catalog/entries
+```
+
+## 4. Dodanie cennika
+
+Po utworzeniu wpisu katalogowego trzeba dodac przynajmniej jeden `PricingPeriod`, jesli oferta ma miec cene.
+
+Przyklad payload:
+
+```json
+{
+  "from": "2026-04-01",
+  "to": "2026-06-30",
+  "price": {
+    "amount": 119,
+    "currency": "PLN"
+  },
+  "discounts": []
+}
+```
+
+Endpoint:
+
+```text
+POST /api/catalog/entries/{id}/pricing
+```
+
+W praktyce wpis katalogowy moze miec kilka okresow cenowych. System pilnuje, zeby sie nie nachodzily.
+
+## 5. Utworzenie puli biletow
+
+Gdy oferta ma byc rezerwowalna, zaklada sie `TicketPool`.
+
+Pula:
+- jest przypieta do `CatalogEntryId`
+- okresla laczna liczbe miejsc
+- przechowuje rezerwacje
+
+Przyklad payload:
+
+```json
+{
+  "catalogEntryId": "catalog-entry-id",
+  "totalCapacity": 70
+}
+```
+
+Endpoint:
+
+```text
+POST /api/availability/pools
+```
+
+Od tego momentu mozna:
+- sprawdzic dostepnosc
+- robic rezerwacje
+- potwierdzac rezerwacje
+- zwiekszac lub zmniejszac pojemnosc
+
+Najwazniejsze endpointy:
+
+```text
+GET  /api/availability/check/{catalogEntryId}
+POST /api/availability/pools/{id}/reserve
+POST /api/availability/pools/{id}/confirm/{reservationId}
+POST /api/availability/pools/{id}/cancel/{reservationId}
+POST /api/availability/pools/{id}/expire
+```
+
+## 6. Definiowanie relacji miedzy komponentami
+
+Przed skladaniem planu mozna zdefiniowac relacje biznesowe pomiedzy komponentami.
+
+Przyklad typow:
+- `Suggests`: komponent sugeruje inny
+- `Excludes`: komponent wyklucza inny
+- `Requires`: komponent wymaga innego
+
+Przyklad payload:
+
+```json
+{
+  "sourceComponentId": "component-id-a",
+  "targetComponentId": "component-id-b",
+  "type": "Requires",
+  "context": "prerequisite",
+  "description": "Miner's Route requires Tourist Route in the same trip."
+}
+```
+
+Endpoint:
+
+```text
+POST /api/trip-selections/relations
+```
+
+## 7. Zalozenie sesji planowania
+
+Uzytkownik zaczyna od utworzenia `SelectionSession`.
+
+Payload:
+
+```json
+{
+  "destinationCity": "Krakow",
+  "travelFrom": "2026-04-10",
+  "travelTo": "2026-04-14",
+  "groupSize": 4
+}
+```
+
+Endpoint:
+
+```text
+POST /api/trip-selections/sessions
+```
+
+## 8. Dodawanie oferty do sesji
+
+Do sesji dodaje sie konkretny `CatalogEntryId`, nie sam komponent.
+
+Payload:
+
+```json
+{
+  "catalogEntryId": "catalog-entry-id"
+}
+```
+
+Endpoint:
+
+```text
+POST /api/trip-selections/sessions/{id}/items
+```
+
+Przy dodaniu system wykonuje nastepujacy flow:
+
+1. Pobiera wpis katalogowy.
+2. Sprawdza dostepnosc biletow przez Availability.
+3. Waliduje constrainty z katalogu.
+4. Pobiera relacje dla `AttractionComponentId`.
+5. Sprawdza konflikty i wymagania wzgledem juz dodanych pozycji.
+6. Dodaje nowa pozycje do `MustHaveItems`.
+7. Buduje `OptionalSuggestions` przez relacje `Suggests`.
+8. Ustawia `ExcludedIds` przez relacje `Excludes`.
+9. Zwraca aktualny stan sesji.
+
+W odpowiedzi sesja zawiera:
+- `MustHaveItems`
+- `OptionalSuggestions`
+- `ExcludedIds`
+- `Issues`
+
+## 9. Usuwanie oferty z sesji
+
+Usuniecie odbywa sie po `CatalogEntryId`.
+
+Endpoint:
+
+```text
+DELETE /api/trip-selections/sessions/{id}/items/{catalogEntryId}
+```
+
+## 10. Typowy scenariusz end-to-end
+
+Przyklad:
+
+1. Admin tworzy atrakcje `Wieliczka Tourist Route`.
+2. Admin tworzy atrakcje `Wieliczka Miner's Route`.
+3. Admin zaklada relacje `Requires` od `Miner's Route` do `Tourist Route`.
+4. Admin wystawia obie atrakcje w katalogu na kwiecien-czerwiec.
+5. Admin zaklada pule biletow dla obu ofert.
+6. Uzytkownik tworzy sesje wyjazdu do Krakowa.
+7. Uzytkownik dodaje `Miner's Route`.
+8. System sprawdza bilety i constrainty.
+9. System wykrywa brak wymaganego komponentu `Tourist Route` i zwraca issue `RequirementMissing`.
+10. Uzytkownik dodaje tez `Tourist Route`.
+11. Sesja przechodzi do stanu spojnego.
+
+## 11. Co jest zrodlem prawdy w systemie
+
+Przy czytaniu kodu warto trzymac ten podzial:
+- `AttractionComponent`: czym jest atrakcja lub pakiet
+- `CatalogEntry`: kiedy i na jakich warunkach da sie to kupic
+- `TicketPool`: ile miejsc realnie zostalo
+- `SelectionSession`: co uzytkownik probuje ulozyc na wyjazd
+
+Ten podzial jest glownym flow calej aplikacji.

@@ -7,8 +7,7 @@ public record SelectionItemDto(
     Guid CatalogEntryId,
     string Name,
     List<TagDto> Tags,
-    Guid AttractionDefinitionId,
-    Guid? VariantId,
+    Guid AttractionComponentId,
     DateTime AddedAt);
 
 public record SelectionIssueDto(string Type, string Message, Guid? RelatedItemId);
@@ -27,8 +26,8 @@ public record SelectionSessionDto(
 
 public record AttractionRelationDto(
     Guid Id,
-    Guid SourceId,
-    Guid TargetId,
+    Guid SourceComponentId,
+    Guid TargetComponentId,
     string Type,
     string? Context,
     string? Description);
@@ -37,4 +36,4 @@ public record CreateSessionDto(string DestinationCity, DateOnly TravelFrom, Date
 
 public record AddItemToSessionDto(Guid CatalogEntryId);
 
-public record CreateRelationDto(Guid SourceId, Guid TargetId, string Type, string? Context, string? Description);
+public record CreateRelationDto(Guid SourceComponentId, Guid TargetComponentId, string Type, string? Context, string? Description);

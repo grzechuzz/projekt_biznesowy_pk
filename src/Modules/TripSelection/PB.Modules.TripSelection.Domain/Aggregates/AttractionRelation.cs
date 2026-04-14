@@ -5,19 +5,19 @@ namespace PB.Modules.TripSelection.Domain.Aggregates;
 
 public class AttractionRelation : AggregateRoot
 {
-    public Guid SourceId { get; }
-    public Guid TargetId { get; }
+    public Guid SourceComponentId { get; }
+    public Guid TargetComponentId { get; }
     public RelationType Type { get; }
     public string? Context { get; }
     public string? Description { get; }
 
-    public AttractionRelation(Guid sourceId, Guid targetId, RelationType type, string? context = null, string? description = null)
+    public AttractionRelation(Guid sourceComponentId, Guid targetComponentId, RelationType type, string? context = null, string? description = null)
     {
-        if (sourceId == Guid.Empty) throw new DomainException("SourceId cannot be empty");
-        if (targetId == Guid.Empty) throw new DomainException("TargetId cannot be empty");
-        if (sourceId == targetId) throw new DomainException("Source and target cannot be the same");
-        SourceId = sourceId;
-        TargetId = targetId;
+        if (sourceComponentId == Guid.Empty) throw new DomainException("SourceComponentId cannot be empty");
+        if (targetComponentId == Guid.Empty) throw new DomainException("TargetComponentId cannot be empty");
+        if (sourceComponentId == targetComponentId) throw new DomainException("Source and target cannot be the same");
+        SourceComponentId = sourceComponentId;
+        TargetComponentId = targetComponentId;
         Type = type;
         Context = context?.Trim();
         Description = description?.Trim();

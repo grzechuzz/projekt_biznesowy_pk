@@ -8,8 +8,7 @@ public record CatalogEntrySnapshot(
     Guid Id,
     string Name,
     string Description,
-    Guid AttractionDefinitionId,
-    Guid? VariantId,
+    Guid AttractionComponentId,
     IReadOnlySet<Tag> Tags,
     string City,
     bool IsEvent,
@@ -19,5 +18,5 @@ public record CatalogEntrySnapshot(
 public interface ICatalogEntryQuery
 {
     Task<CatalogEntrySnapshot?> GetByIdAsync(Guid id);
-    Task<IEnumerable<CatalogEntrySnapshot>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId);
+    Task<IEnumerable<CatalogEntrySnapshot>> GetByAttractionComponentIdAsync(Guid attractionComponentId);
 }

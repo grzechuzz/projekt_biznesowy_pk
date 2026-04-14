@@ -26,7 +26,7 @@ public class CatalogService : ICatalogService
             new BookingConstraintVO(c.Type, c.Key, c.MinValue, c.MaxValue, c.AllowedValues));
 
         var entry = new CatalogEntry(
-            dto.AttractionDefinitionId, dto.VariantId,
+            dto.AttractionComponentId,
             dto.Name, dto.Description,
             location, dateRange, dto.IsEvent, tags, constraints);
 
@@ -43,9 +43,9 @@ public class CatalogService : ICatalogService
         return entry == null ? null : MapToDto(entry);
     }
 
-    public async Task<IEnumerable<CatalogEntryDto>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    public async Task<IEnumerable<CatalogEntryDto>> GetByAttractionComponentIdAsync(Guid attractionComponentId)
     {
-        var entries = await _repository.GetByAttractionDefinitionIdAsync(attractionDefinitionId);
+        var entries = await _repository.GetByAttractionComponentIdAsync(attractionComponentId);
         return entries.Select(MapToDto);
     }
 
@@ -162,8 +162,7 @@ public class CatalogService : ICatalogService
     {
         return new CatalogEntryDto(
             e.Id,
-            e.AttractionDefinitionId,
-            e.VariantId,
+            e.AttractionComponentId,
             e.Name,
             e.Description,
             e.Tags.Select(t => new TagDto(t.Name, t.Group)).ToList(),

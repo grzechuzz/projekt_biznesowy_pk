@@ -6,7 +6,7 @@ public interface ICatalogService
 {
     Task<CatalogEntryDto> CreateAsync(CreateCatalogEntryDto dto);
     Task<CatalogEntryDto?> GetByIdAsync(Guid id);
-    Task<IEnumerable<CatalogEntryDto>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId);
+    Task<IEnumerable<CatalogEntryDto>> GetByAttractionComponentIdAsync(Guid attractionComponentId);
     Task<IEnumerable<CatalogEntryDto>> SearchAsync(string? city, DateOnly? from, DateOnly? to, IEnumerable<string>? tags, string? status);
     Task<CatalogEntryDto> UpdateAsync(Guid id, UpdateCatalogEntryDto dto);
     Task DeleteAsync(Guid id);

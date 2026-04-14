@@ -35,8 +35,8 @@ public class SelectionSession : AggregateRoot
         if (_mustHaveItems.Any(i => i.CatalogEntryId == item.CatalogEntryId))
             throw new DomainException("Item already in must-have list");
         _mustHaveItems.Add(item);
-        _optionalSuggestions.RemoveAll(s => s.CatalogEntryId == item.CatalogEntryId);
-        _excludedIds.Remove(item.CatalogEntryId);
+        _optionalSuggestions.RemoveAll(s => s.AttractionComponentId == item.AttractionComponentId);
+        _excludedIds.Remove(item.AttractionComponentId);
     }
 
     public void RemoveMustHaveItem(Guid catalogEntryId)
@@ -51,8 +51,8 @@ public class SelectionSession : AggregateRoot
         _optionalSuggestions.Clear();
         foreach (var s in suggestions)
         {
-            if (!_mustHaveItems.Any(i => i.CatalogEntryId == s.CatalogEntryId)
-                && !_excludedIds.Contains(s.CatalogEntryId))
+            if (!_mustHaveItems.Any(i => i.AttractionComponentId == s.AttractionComponentId)
+                && !_excludedIds.Contains(s.AttractionComponentId))
                 _optionalSuggestions.Add(s);
         }
     }
@@ -61,7 +61,7 @@ public class SelectionSession : AggregateRoot
     {
         _excludedIds.Clear();
         foreach (var id in excludedIds)
-            if (!_mustHaveItems.Any(i => i.CatalogEntryId == id))
+            if (!_mustHaveItems.Any(i => i.AttractionComponentId == id))
                 _excludedIds.Add(id);
     }
 

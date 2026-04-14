@@ -18,8 +18,7 @@ public record DateRangeDto(DateOnly From, DateOnly To);
 
 public record CatalogEntryDto(
     Guid Id,
-    Guid AttractionDefinitionId,
-    Guid? VariantId,
+    Guid AttractionComponentId,
     string Name,
     string Description,
     List<TagDto> Tags,
@@ -32,8 +31,7 @@ public record CatalogEntryDto(
     List<BookingConstraintDto> Constraints);
 
 public record CreateCatalogEntryDto(
-    Guid AttractionDefinitionId,
-    Guid? VariantId,
+    Guid AttractionComponentId,
     string Name,
     string Description,
     List<TagDto>? Tags,

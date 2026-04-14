@@ -6,8 +6,7 @@ namespace PB.Modules.Catalog.Domain.Aggregates;
 
 public class CatalogEntry : AggregateRoot
 {
-    public Guid AttractionDefinitionId { get; }
-    public Guid? VariantId { get; }
+    public Guid AttractionComponentId { get; }
     public string Name { get; private set; }
     public string Description { get; private set; }
     private readonly HashSet<Tag> _tags = new();
@@ -23,14 +22,13 @@ public class CatalogEntry : AggregateRoot
     public IReadOnlyList<PricingPeriod> PricingPeriods => _pricingPeriods.AsReadOnly();
     public IReadOnlyList<BookingConstraint> Constraints => _constraints.AsReadOnly();
 
-    public CatalogEntry(Guid attractionDefinitionId, Guid? variantId, string name, string description,
+    public CatalogEntry(Guid attractionComponentId, string name, string description,
         CatalogLocation location, DateRange dateRange, bool isEvent, IEnumerable<Tag>? tags = null,
         IEnumerable<BookingConstraint>? constraints = null)
     {
-        if (attractionDefinitionId == Guid.Empty) throw new DomainException("AttractionDefinitionId cannot be empty");
+        if (attractionComponentId == Guid.Empty) throw new DomainException("AttractionComponentId cannot be empty");
         if (string.IsNullOrWhiteSpace(name)) throw new DomainException("Name cannot be empty");
-        AttractionDefinitionId = attractionDefinitionId;
-        VariantId = variantId;
+        AttractionComponentId = attractionComponentId;
         Name = name.Trim();
         Description = description?.Trim() ?? "";
         Location = location ?? throw new DomainException("Location cannot be null");
