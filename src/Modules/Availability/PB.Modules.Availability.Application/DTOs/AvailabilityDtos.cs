@@ -5,7 +5,6 @@ public record ReservationDto(Guid Id, int Quantity, string Status, DateTime Crea
 public record TicketPoolDto(
     Guid Id,
     Guid CatalogEntryId,
-    Guid? VariantId,
     int TotalCapacity,
     int PendingCount,
     int ConfirmedCount,
@@ -15,7 +14,7 @@ public record TicketPoolDto(
 
 public record AvailabilityDto(Guid CatalogEntryId, bool IsAvailable, int AvailableCount, int TotalCapacity);
 
-public record CreateTicketPoolDto(Guid CatalogEntryId, Guid? VariantId, int TotalCapacity);
+public record CreateTicketPoolDto(Guid CatalogEntryId, int TotalCapacity);
 
 public record ReserveTicketsDto(int Quantity, DateTime? ExpiresAt, string? Notes);
 

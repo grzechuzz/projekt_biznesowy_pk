@@ -7,7 +7,6 @@ namespace PB.Modules.Availability.Domain.Aggregates;
 public class TicketPool : AggregateRoot
 {
     public Guid CatalogEntryId { get; }
-    public Guid? VariantId { get; }
     public int TotalCapacity { get; private set; }
     private readonly List<Reservation> _reservations = new();
 
@@ -18,12 +17,11 @@ public class TicketPool : AggregateRoot
     public int AvailableCount => TotalCapacity - PendingCount - ConfirmedCount;
     public bool IsAvailable => AvailableCount > 0;
 
-    public TicketPool(Guid catalogEntryId, Guid? variantId, int totalCapacity)
+    public TicketPool(Guid catalogEntryId, int totalCapacity)
     {
         if (catalogEntryId == Guid.Empty) throw new DomainException("CatalogEntryId cannot be empty");
         if (totalCapacity <= 0) throw new DomainException("Total capacity must be positive");
         CatalogEntryId = catalogEntryId;
-        VariantId = variantId;
         TotalCapacity = totalCapacity;
     }
 

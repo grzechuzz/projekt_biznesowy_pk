@@ -44,9 +44,9 @@ public class InMemoryCatalogEntryRepository : ICatalogEntryRepository
         return Task.FromResult<IEnumerable<CatalogEntry>>(query.ToList());
     }
 
-    public Task<IEnumerable<CatalogEntry>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    public Task<IEnumerable<CatalogEntry>> GetByAttractionComponentIdAsync(Guid attractionComponentId)
     {
-        var results = _store.Values.Where(e => e.AttractionDefinitionId == attractionDefinitionId).ToList();
+        var results = _store.Values.Where(e => e.AttractionComponentId == attractionComponentId).ToList();
         return Task.FromResult<IEnumerable<CatalogEntry>>(results);
     }
 

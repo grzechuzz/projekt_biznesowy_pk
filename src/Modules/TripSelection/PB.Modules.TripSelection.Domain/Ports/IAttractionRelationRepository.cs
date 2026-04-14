@@ -6,7 +6,7 @@ public interface IAttractionRelationRepository
 {
     Task<AttractionRelation?> GetByIdAsync(Guid id);
     Task<IEnumerable<AttractionRelation>> GetAllAsync();
-    Task<IEnumerable<AttractionRelation>> GetBySourceIdAsync(Guid sourceId);
+    Task<IEnumerable<AttractionRelation>> GetBySourceComponentIdAsync(Guid sourceComponentId);
     Task AddAsync(AttractionRelation relation);
     Task DeleteAsync(Guid id);
 }

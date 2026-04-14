@@ -10,8 +10,7 @@ public static class Extensions
     public static IServiceCollection AddAttractionDefinitionModule(this IServiceCollection services)
     {
         services.AddSingleton<IAttractionComponentRepository, InMemoryAttractionComponentRepository>();
-        services.AddScoped<IAttractionDefinitionService, AttractionDefinitionService>();
-        services.AddScoped<IAttractionPackageService, AttractionPackageService>();
+        services.AddScoped<IAttractionComponentService, AttractionComponentService>();
         return services;
     }
 }

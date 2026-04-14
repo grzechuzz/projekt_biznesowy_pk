@@ -5,27 +5,31 @@ using PB.Modules.AttractionDefinition.Application.Services;
 namespace PB.Modules.AttractionDefinition.Api.Controllers;
 
 [ApiController]
-[Route("api/attraction-packages")]
-public class AttractionPackagesController : ControllerBase
+[Route("api/attraction-components")]
+public class AttractionComponentsController : ControllerBase
 {
-    private readonly IAttractionPackageService _service;
+    private readonly IAttractionComponentService _service;
 
-    public AttractionPackagesController(IAttractionPackageService service)
+    public AttractionComponentsController(IAttractionComponentService service)
     {
         _service = service;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] CreatePackageDto dto)
+    public async Task<IActionResult> Create([FromBody] CreateAttractionComponentDto dto)
     {
         var result = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll(
+        [FromQuery] string? type,
+        [FromQuery] string? tag,
+        [FromQuery] string? city,
+        [FromQuery] bool? isComplete)
     {
-        var result = await _service.GetAllAsync();
+        var result = await _service.GetAllAsync(type, tag, city, isComplete);
         return Ok(result);
     }
 
@@ -37,7 +41,7 @@ public class AttractionPackagesController : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
-    public async Task<IActionResult> Update(Guid id, [FromBody] UpdatePackageDto dto)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateAttractionComponentDto dto)
     {
         var result = await _service.UpdateAsync(id, dto);
         return Ok(result);
@@ -48,6 +52,20 @@ public class AttractionPackagesController : ControllerBase
     {
         await _service.DeleteAsync(id);
         return NoContent();
+    }
+
+    [HttpPost("{id:guid}/tags")]
+    public async Task<IActionResult> AddTag(Guid id, [FromBody] TagDto tag)
+    {
+        var result = await _service.AddTagAsync(id, tag);
+        return Ok(result);
+    }
+
+    [HttpDelete("{id:guid}/tags")]
+    public async Task<IActionResult> RemoveTag(Guid id, [FromBody] TagDto tag)
+    {
+        var result = await _service.RemoveTagAsync(id, tag);
+        return Ok(result);
     }
 
     [HttpPost("{id:guid}/components/{componentId:guid}")]

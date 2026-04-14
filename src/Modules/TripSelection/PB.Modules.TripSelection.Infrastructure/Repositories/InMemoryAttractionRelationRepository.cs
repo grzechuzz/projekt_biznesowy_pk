@@ -17,9 +17,9 @@ public class InMemoryAttractionRelationRepository : IAttractionRelationRepositor
     public Task<IEnumerable<AttractionRelation>> GetAllAsync()
         => Task.FromResult<IEnumerable<AttractionRelation>>(_store.Values.ToList());
 
-    public Task<IEnumerable<AttractionRelation>> GetBySourceIdAsync(Guid sourceId)
+    public Task<IEnumerable<AttractionRelation>> GetBySourceComponentIdAsync(Guid sourceComponentId)
     {
-        var results = _store.Values.Where(r => r.SourceId == sourceId).ToList();
+        var results = _store.Values.Where(r => r.SourceComponentId == sourceComponentId).ToList();
         return Task.FromResult<IEnumerable<AttractionRelation>>(results);
     }
 

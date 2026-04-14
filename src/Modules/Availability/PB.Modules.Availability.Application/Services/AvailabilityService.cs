@@ -16,7 +16,7 @@ public class AvailabilityService : IAvailabilityService
 
     public async Task<TicketPoolDto> CreatePoolAsync(CreateTicketPoolDto dto)
     {
-        var pool = new TicketPool(dto.CatalogEntryId, dto.VariantId, dto.TotalCapacity);
+        var pool = new TicketPool(dto.CatalogEntryId, dto.TotalCapacity);
         await _repository.AddAsync(pool);
         return MapToDto(pool);
     }
@@ -115,7 +115,6 @@ public class AvailabilityService : IAvailabilityService
         new TicketPoolDto(
             pool.Id,
             pool.CatalogEntryId,
-            pool.VariantId,
             pool.TotalCapacity,
             pool.PendingCount,
             pool.ConfirmedCount,

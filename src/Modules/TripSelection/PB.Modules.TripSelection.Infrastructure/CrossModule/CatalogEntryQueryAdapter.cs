@@ -19,9 +19,9 @@ public class CatalogEntryQueryAdapter : ICatalogEntryQuery
         return dto == null ? null : MapToSnapshot(dto);
     }
 
-    public async Task<IEnumerable<CatalogEntrySnapshot>> GetByAttractionDefinitionIdAsync(Guid attractionDefinitionId)
+    public async Task<IEnumerable<CatalogEntrySnapshot>> GetByAttractionComponentIdAsync(Guid attractionComponentId)
     {
-        var dtos = await _catalogService.GetByAttractionDefinitionIdAsync(attractionDefinitionId);
+        var dtos = await _catalogService.GetByAttractionComponentIdAsync(attractionComponentId);
         return dtos.Select(MapToSnapshot);
     }
 
@@ -35,7 +35,7 @@ public class CatalogEntryQueryAdapter : ICatalogEntryQuery
 
         return new CatalogEntrySnapshot(
             dto.Id, dto.Name, dto.Description,
-            dto.AttractionDefinitionId, dto.VariantId,
+            dto.AttractionComponentId,
             tags, dto.Location.City, dto.IsEvent, dto.Status, constraints);
     }
 }

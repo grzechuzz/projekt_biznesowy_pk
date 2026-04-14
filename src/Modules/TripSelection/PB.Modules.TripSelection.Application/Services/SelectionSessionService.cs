@@ -114,23 +114,17 @@ public class SelectionSessionService : ISelectionSessionService
 
         var issues = softIssues;
 
-        // Get relations for this attraction (new item as source)
-        var relations = (await _relationRepository.GetBySourceIdAsync(entrySnapshot.AttractionDefinitionId)).ToList();
-        if (entrySnapshot.VariantId.HasValue)
-            relations.AddRange(await _relationRepository.GetBySourceIdAsync(entrySnapshot.VariantId.Value));
+        // Get relations for this component (new item as source)
+        var relations = (await _relationRepository.GetBySourceComponentIdAsync(entrySnapshot.AttractionComponentId)).ToList();
 
         // Also fetch relations where existing items are the source (to check "existing excludes new")
         foreach (var existing in session.MustHaveItems)
-        {
-            relations.AddRange(await _relationRepository.GetBySourceIdAsync(existing.AttractionDefinitionId));
-            if (existing.VariantId.HasValue)
-                relations.AddRange(await _relationRepository.GetBySourceIdAsync(existing.VariantId.Value));
-        }
+            relations.AddRange(await _relationRepository.GetBySourceComponentIdAsync(existing.AttractionComponentId));
 
         // Create item
         var newItem = new SelectionItem(
             dto.CatalogEntryId, entrySnapshot.Name, entrySnapshot.Tags,
-            entrySnapshot.AttractionDefinitionId, entrySnapshot.VariantId);
+            entrySnapshot.AttractionComponentId);
 
         // Validate against existing items (relation-based warnings)
         var validationIssues = _relationValidationService.ValidateNewItem(newItem, session.MustHaveItems, relations);
@@ -139,21 +133,20 @@ public class SelectionSessionService : ISelectionSessionService
         // Add to must-have
         session.AddMustHaveItem(newItem);
 
-        // Get suggestions - relation targets are AttractionDefinition/Variant IDs,
-        // so we look up catalog entries by their AttractionDefinitionId
-        var suggestionDefIds = _relationValidationService.GetSuggestions(newItem, relations).ToList();
+        // Map suggested components to available catalog entries.
+        var suggestionComponentIds = _relationValidationService.GetSuggestions(newItem, relations).ToList();
         var suggestionItems = new List<SelectionItem>();
-        foreach (var suggestedDefId in suggestionDefIds)
+        foreach (var suggestedComponentId in suggestionComponentIds)
         {
-            var catalogEntries = await _catalogEntryQuery.GetByAttractionDefinitionIdAsync(suggestedDefId);
+            var catalogEntries = await _catalogEntryQuery.GetByAttractionComponentIdAsync(suggestedComponentId);
             foreach (var suggestedEntry in catalogEntries)
             {
-                if (session.MustHaveItems.Any(i => i.CatalogEntryId == suggestedEntry.Id)) continue;
+                if (session.MustHaveItems.Any(i => i.AttractionComponentId == suggestedEntry.AttractionComponentId)) continue;
                 var suggestedAvailable = await _availabilityQuery.IsAvailableAsync(suggestedEntry.Id);
                 if (!suggestedAvailable) continue;
                 suggestionItems.Add(new SelectionItem(
                     suggestedEntry.Id, suggestedEntry.Name, suggestedEntry.Tags,
-                    suggestedEntry.AttractionDefinitionId, suggestedEntry.VariantId));
+                    suggestedEntry.AttractionComponentId));
             }
         }
         session.SetSuggestions(suggestionItems);
@@ -200,8 +193,7 @@ public class SelectionSessionService : ISelectionSessionService
             item.CatalogEntryId,
             item.Name,
             item.Tags.Select(t => new TagDto(t.Name, t.Group)).ToList(),
-            item.AttractionDefinitionId,
-            item.VariantId,
+            item.AttractionComponentId,
             item.AddedAt);
     }
 }

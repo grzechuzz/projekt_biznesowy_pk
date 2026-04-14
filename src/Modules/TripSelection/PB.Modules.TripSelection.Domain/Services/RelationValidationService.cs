@@ -10,17 +10,13 @@ public class RelationValidationService : IRelationValidationService
     public IEnumerable<SelectionIssue> ValidateNewItem(SelectionItem item, IEnumerable<SelectionItem> existingItems, IEnumerable<AttractionRelation> relations)
     {
         var issues = new List<SelectionIssue>();
-        var itemIds = new HashSet<Guid> { item.AttractionDefinitionId };
-        if (item.VariantId.HasValue) itemIds.Add(item.VariantId.Value);
-
         var existingList = existingItems.ToList();
         var relationList = relations.ToList();
 
         // Check: new item EXCLUDES something already in selection
-        foreach (var rel in relationList.Where(r => itemIds.Contains(r.SourceId) && r.Type == RelationType.Excludes))
+        foreach (var rel in relationList.Where(r => r.SourceComponentId == item.AttractionComponentId && r.Type == RelationType.Excludes))
         {
-            var conflicting = existingList.FirstOrDefault(i =>
-                i.AttractionDefinitionId == rel.TargetId || i.VariantId == rel.TargetId);
+            var conflicting = existingList.FirstOrDefault(i => i.AttractionComponentId == rel.TargetComponentId);
             if (conflicting != null)
                 issues.Add(new SelectionIssue(IssueType.Conflict,
                     $"'{item.Name}' conflicts with '{conflicting.Name}' already in your selection", conflicting.Id));
@@ -29,23 +25,21 @@ public class RelationValidationService : IRelationValidationService
         // Check: existing item EXCLUDES new item
         foreach (var existing in existingList)
         {
-            var existingIds = new HashSet<Guid> { existing.AttractionDefinitionId };
-            if (existing.VariantId.HasValue) existingIds.Add(existing.VariantId.Value);
-            foreach (var rel in relationList.Where(r => existingIds.Contains(r.SourceId) && r.Type == RelationType.Excludes))
+            foreach (var rel in relationList.Where(r => r.SourceComponentId == existing.AttractionComponentId && r.Type == RelationType.Excludes))
             {
-                if (itemIds.Contains(rel.TargetId))
+                if (item.AttractionComponentId == rel.TargetComponentId)
                     issues.Add(new SelectionIssue(IssueType.Conflict,
                         $"'{existing.Name}' in your selection conflicts with '{item.Name}'", existing.Id));
             }
         }
 
         // Check: new item REQUIRES something not in selection
-        foreach (var rel in relationList.Where(r => itemIds.Contains(r.SourceId) && r.Type == RelationType.Requires))
+        foreach (var rel in relationList.Where(r => r.SourceComponentId == item.AttractionComponentId && r.Type == RelationType.Requires))
         {
-            var required = existingList.Any(i => i.AttractionDefinitionId == rel.TargetId || i.VariantId == rel.TargetId);
+            var required = existingList.Any(i => i.AttractionComponentId == rel.TargetComponentId);
             if (!required)
                 issues.Add(new SelectionIssue(IssueType.RequirementMissing,
-                    $"'{item.Name}' requires another attraction (id: {rel.TargetId}) to be added first"));
+                    $"'{item.Name}' requires another attraction (component: {rel.TargetComponentId}) to be added first"));
         }
 
         return issues;
@@ -53,21 +47,17 @@ public class RelationValidationService : IRelationValidationService
 
     public IEnumerable<Guid> GetSuggestions(SelectionItem item, IEnumerable<AttractionRelation> relations)
     {
-        var itemIds = new HashSet<Guid> { item.AttractionDefinitionId };
-        if (item.VariantId.HasValue) itemIds.Add(item.VariantId.Value);
         return relations
-            .Where(r => itemIds.Contains(r.SourceId) && r.Type == RelationType.Suggests)
-            .Select(r => r.TargetId)
+            .Where(r => r.SourceComponentId == item.AttractionComponentId && r.Type == RelationType.Suggests)
+            .Select(r => r.TargetComponentId)
             .Distinct();
     }
 
     public IEnumerable<Guid> GetExclusions(SelectionItem item, IEnumerable<AttractionRelation> relations)
     {
-        var itemIds = new HashSet<Guid> { item.AttractionDefinitionId };
-        if (item.VariantId.HasValue) itemIds.Add(item.VariantId.Value);
         return relations
-            .Where(r => itemIds.Contains(r.SourceId) && r.Type == RelationType.Excludes)
-            .Select(r => r.TargetId)
+            .Where(r => r.SourceComponentId == item.AttractionComponentId && r.Type == RelationType.Excludes)
+            .Select(r => r.TargetComponentId)
             .Distinct();
     }
 }

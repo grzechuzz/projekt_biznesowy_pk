@@ -20,7 +20,7 @@ public class AttractionRelationService : IAttractionRelationService
         if (!Enum.TryParse<RelationType>(dto.Type, true, out var relationType))
             throw new DomainException($"Unknown relation type: {dto.Type}");
 
-        var relation = new AttractionRelation(dto.SourceId, dto.TargetId, relationType, dto.Context, dto.Description);
+        var relation = new AttractionRelation(dto.SourceComponentId, dto.TargetComponentId, relationType, dto.Context, dto.Description);
         await _repository.AddAsync(relation);
         return MapToDto(relation);
     }
@@ -45,5 +45,5 @@ public class AttractionRelationService : IAttractionRelationService
     }
 
     private static AttractionRelationDto MapToDto(AttractionRelation r) =>
-        new AttractionRelationDto(r.Id, r.SourceId, r.TargetId, r.Type.ToString(), r.Context, r.Description);
+        new AttractionRelationDto(r.Id, r.SourceComponentId, r.TargetComponentId, r.Type.ToString(), r.Context, r.Description);
 }
