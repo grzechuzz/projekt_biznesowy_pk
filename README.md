@@ -1,4 +1,4 @@
-# PB
+# Projek Biznesowy
 
 System zarzadzania atrakcjami turystycznymi z podzialem na cztery moduly:
 - `AttractionDefinition`: model komponentow atrakcji i pakietow
