@@ -109,7 +109,37 @@ public class DataSeeder
                 "Former limestone quarry turned open-air swimming and snorkelling spot in Kraków. Free entry, no reservation needed.",
                 [Tag("swimming", "type"), Tag("outdoor", "type"), Tag("lake", "category"), Tag("free", "category"), Tag("nature", "category"), Tag("krakow", "loc")],
                 new Location("Kraków", "ul. Twardowskiego, 30-213 Kraków", 50.0369, 19.9005),
-                Hours(8, 0, 20, 0))
+                Hours(8, 0, 20, 0)),
+
+            // --- KOPIEC KOŚCIUSZKI ---
+            // Każda fizyczna część kompleksu to osobny AttractionDefinition, bo model PB
+            // rozdziela "co to jest" (Component) od "kiedy i za ile" (CatalogEntry).
+            // Dzięki temu można potem wystawić wspólny pakiet biletowy przez AttractionPackage.
+            new AttractionSeed("kopiec-mound", "Kopiec Kościuszki - Mound & Viewpoint",
+                "The 326m mound raised in 1823 in honour of Tadeusz Kościuszko. Serpentine path to the summit with panoramic views of Kraków.",
+                [Tag("mound", "type"), Tag("viewpoint", "category"), Tag("outdoor", "type"), Tag("history", "category"), Tag("landmark", "category"), Tag("krakow", "loc")],
+                new Location("Kraków", "al. Waszyngtona 1, 30-204 Kraków", 50.0551, 19.8935),
+                Hours(9, 30, 19, 30)),
+            new AttractionSeed("kopiec-museum", "Muzeum Kościuszki",
+                "Indoor museum in the chapel basement dedicated to the Kościuszko Insurrection and the history of the mound itself.",
+                [Tag("museum", "type"), Tag("history", "category"), Tag("indoor", "type"), Tag("krakow", "loc")],
+                new Location("Kraków", "al. Waszyngtona 1, 30-204 Kraków", 50.0548, 19.8940),
+                Hours(10, 0, 18, 0)),
+            new AttractionSeed("kopiec-chapel", "Kaplica bł. Bronisławy",
+                "Neo-Gothic chapel on top of the 19th-century Austrian fort. Short visit, part of the mound complex.",
+                [Tag("church", "type"), Tag("religion", "category"), Tag("indoor", "type"), Tag("krakow", "loc")],
+                new Location("Kraków", "al. Waszyngtona 1, 30-204 Kraków", 50.0549, 19.8938),
+                Hours(10, 0, 18, 0)),
+            new AttractionSeed("kopiec-fort", "Fort 2 Kościuszko - Austrian Fortress",
+                "19th-century Austrian defensive fortifications surrounding the mound. Walk around ramparts and outer walls.",
+                [Tag("fort", "type"), Tag("military", "category"), Tag("outdoor", "type"), Tag("history", "category"), Tag("krakow", "loc")],
+                new Location("Kraków", "al. Waszyngtona 1, 30-204 Kraków", 50.0553, 19.8933),
+                Hours(9, 30, 19, 30)),
+            new AttractionSeed("kopiec-guided", "Kopiec Kościuszki - Guided Tour",
+                "Full guided tour of the complex: mound, museum, chapel and the fort ramparts. Polish and English available.",
+                [Tag("guided-tour", "type"), Tag("history", "category"), Tag("krakow", "loc")],
+                new Location("Kraków", "al. Waszyngtona 1, 30-204 Kraków", 50.0551, 19.8935),
+                Hours(10, 0, 16, 0))
         };
 
         var componentsByKey = new Dictionary<string, AttractionComponent>();
@@ -131,7 +161,15 @@ public class DataSeeder
                 "Wawel Full Experience",
                 "Pick any 2 of the 3 Wawel attractions: State Rooms, Armoury, Dragon's Den.",
                 SelectionRule.PickN(2),
-                ["wawel-state-rooms", "wawel-armoury", "wawel-dragons-den"])
+                ["wawel-state-rooms", "wawel-armoury", "wawel-dragons-den"]),
+            // Pakiet "Kopiec + jedna rzecz w środku" — analog Wawelu, PickN(2) wybiera kopiec + jedno z muzeum/kaplicy/fortu.
+            // Mound musi być w wyborze, bo to zawsze baza pakietu — ograniczenie modelu: SelectionRule nie potrafi powiedzieć "mound obowiązkowy + PickN(1) z reszty".
+            new PackageSeed(
+                "kopiec-combo",
+                "Kopiec Kościuszki - Combo Ticket",
+                "Visit the mound plus one indoor attraction: pick any 2 of Mound, Museum, Chapel.",
+                SelectionRule.PickN(2),
+                ["kopiec-mound", "kopiec-museum", "kopiec-chapel"])
         };
 
         foreach (var seed in packageSeeds)
@@ -209,7 +247,57 @@ public class DataSeeder
             new CatalogSeed("zakrzowek", "Zakrzówek Reservoir - Open Water Swimming", "Turquoise quarry lake in Kraków. Free entry, no booking. Bring your own towel.",
                 [Tag("swimming", "type"), Tag("outdoor", "type"), Tag("free", "category"), Tag("krakow", "loc")],
                 "Kraków", "ul. Twardowskiego", new DateOnly(2026, 5, 1), new DateOnly(2026, 8, 31), new CatalogOpeningHours(new TimeOnly(8, 0), new TimeOnly(20, 0)), false,
-                [], [Pricing(new DateOnly(2026, 5, 1), new DateOnly(2026, 8, 31), 0)], 999)
+                [], [Pricing(new DateOnly(2026, 5, 1), new DateOnly(2026, 8, 31), 0)], 999),
+
+            // --- Kopiec Kościuszki: wpisy katalogowe ---
+            // Model PB pozwala rozłożyć ceny na kilka okresów (PricingPeriod) — wykorzystuję to do sezonowości.
+            // Sam kopiec: taniej poza sezonem letnim. Muzeum: stała cena. Godziny otwarcia różne letni vs zimowy
+            // musiałbym wyrazić przez dwa osobne CatalogEntry — model ma tylko jedno OpeningHours per entry, więc kompromis: wybieram letnie.
+            new CatalogSeed("kopiec-mound", "Kopiec Kościuszki - Summit Access",
+                "Walk up the mound to the viewing terrace. Summer pricing Apr-Oct, reduced off-season.",
+                [Tag("mound", "type"), Tag("viewpoint", "category"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", new DateOnly(2026, 4, 1), new DateOnly(2026, 10, 31),
+                new CatalogOpeningHours(new TimeOnly(9, 30), new TimeOnly(19, 30)), false,
+                [],
+                [
+                    Pricing(new DateOnly(2026, 4, 1), new DateOnly(2026, 10, 31), 18),
+                    Pricing(new DateOnly(2026, 11, 1), new DateOnly(2027, 3, 31), 12)
+                ], 80),
+            new CatalogSeed("kopiec-museum", "Muzeum Kościuszki - Permanent Exhibition",
+                "Indoor exhibition about the Kościuszko Insurrection and the mound's history.",
+                [Tag("museum", "type"), Tag("history", "category"), Tag("indoor", "type"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", catalogFrom, catalogTo,
+                new CatalogOpeningHours(new TimeOnly(10, 0), new TimeOnly(18, 0)), false,
+                [Constraint("Max", "group_size", null, 25)],
+                [Pricing(catalogFrom, catalogTo, 14)], 35),
+            new CatalogSeed("kopiec-chapel", "Kaplica bł. Bronisławy - Short Visit",
+                "Neo-Gothic chapel visit, approximately 20 minutes.",
+                [Tag("church", "type"), Tag("religion", "category"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", catalogFrom, catalogTo,
+                new CatalogOpeningHours(new TimeOnly(10, 0), new TimeOnly(18, 0)), false,
+                [],
+                [Pricing(catalogFrom, catalogTo, 5)], 40),
+            new CatalogSeed("kopiec-fort", "Fort 2 Kościuszko - Ramparts Walk",
+                "Self-guided walk around the 19th-century Austrian fort. Outdoor, seasonal.",
+                [Tag("fort", "type"), Tag("military", "category"), Tag("outdoor", "type"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", new DateOnly(2026, 4, 1), new DateOnly(2026, 10, 31),
+                new CatalogOpeningHours(new TimeOnly(9, 30), new TimeOnly(19, 30)), false,
+                [],
+                [Pricing(new DateOnly(2026, 4, 1), new DateOnly(2026, 10, 31), 10)], 120),
+            new CatalogSeed("kopiec-guided", "Kopiec Kościuszki - Guided Tour (Group)",
+                "Guided tour of the whole complex: mound + museum + chapel + fort. 2h, booking required.",
+                [Tag("guided-tour", "type"), Tag("history", "category"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", catalogFrom, catalogTo,
+                new CatalogOpeningHours(new TimeOnly(10, 0), new TimeOnly(16, 0)), false,
+                [Constraint("Range", "group_size", 4, 20), Constraint("RequiredDaysAhead", "booking_days_ahead", 2, null), Constraint("OneOf", "language", null, null, "polish", "english")],
+                [Pricing(catalogFrom, catalogTo, 45)], 20),
+            new CatalogSeed("kopiec-combo", "Kopiec Kościuszki - Combo Ticket",
+                "Choose 2 of 3: Mound, Museum, Chapel. Single combined ticket.",
+                [Tag("package", "type"), Tag("krakow", "loc")],
+                "Kraków", "al. Waszyngtona 1", catalogFrom, catalogTo,
+                new CatalogOpeningHours(new TimeOnly(9, 30), new TimeOnly(18, 0)), false,
+                [],
+                [Pricing(catalogFrom, catalogTo, 28)], 100)
         };
 
         var catalogEntriesByKey = new Dictionary<string, CatalogEntry>();
@@ -251,7 +339,20 @@ public class DataSeeder
             new RelationSeed("tatry", "wieliczka-tourist", RelationType.Excludes, "time_conflict", "Tatra Mountains is a full-day trip from Kraków - no time for Wieliczka the same day."),
             new RelationSeed("tatry", "tauron-concert", RelationType.Excludes, "exhaustion", "After a full mountain day you will be too tired for an evening concert."),
             new RelationSeed("tatry", "wawel-state-rooms", RelationType.Excludes, "exhaustion", "After a full mountain day, guided castle tours are too much - save Wawel for another day."),
-            new RelationSeed("wieliczka-miner", "wieliczka-tourist", RelationType.Requires, "prerequisite", "Miner's Route requires prior orientation in the mine - plan Tourist Route in the same trip.")
+            new RelationSeed("wieliczka-miner", "wieliczka-tourist", RelationType.Requires, "prerequisite", "Miner's Route requires prior orientation in the mine - plan Tourist Route in the same trip."),
+
+            // --- Relacje Kopca Kościuszki ---
+            // Suggests: klasyczne "jesteś już na miejscu, dorzuć sobie to". Test dla Trip Selection.
+            new RelationSeed("kopiec-mound", "kopiec-museum", RelationType.Suggests, "same_location", "Muzeum jest w kompleksie kopca - 2 minuty od tarasu."),
+            new RelationSeed("kopiec-mound", "kopiec-chapel", RelationType.Suggests, "same_location", "Kaplica stoi na szczycie fortu, przy wejściu na kopiec."),
+            new RelationSeed("kopiec-mound", "kopiec-fort", RelationType.Suggests, "same_location", "Wały fortu otaczają kopiec, dostępne jednym ruchem."),
+            // Excludes po całodniowej górskiej wycieczce - analog tatry→wawel.
+            new RelationSeed("tatry", "kopiec-guided", RelationType.Excludes, "exhaustion", "After a full day in Tatras, a 2h guided tour up the mound is too much."),
+            // Replaces: guided tour zastępuje pojedyncze bilety - idealne dla Replaces, którego w Wawelu nie użyli.
+            new RelationSeed("kopiec-guided", "kopiec-mound", RelationType.Replaces, "superset", "Guided tour already includes the mound - don't buy both."),
+            new RelationSeed("kopiec-guided", "kopiec-museum", RelationType.Replaces, "superset", "Guided tour already includes the museum."),
+            new RelationSeed("kopiec-guided", "kopiec-chapel", RelationType.Replaces, "superset", "Guided tour already includes the chapel."),
+            new RelationSeed("kopiec-guided", "kopiec-fort", RelationType.Replaces, "superset", "Guided tour already includes the fort ramparts.")
         };
 
         foreach (var seed in relationSeeds)
