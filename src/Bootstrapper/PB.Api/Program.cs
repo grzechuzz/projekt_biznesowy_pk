@@ -34,6 +34,9 @@ using (var scope = app.Services.CreateScope())
 {
     var seeder = ActivatorUtilities.CreateInstance<DataSeeder>(scope.ServiceProvider);
     await seeder.SeedAsync();
+
+    var waterParkSeeder = ActivatorUtilities.CreateInstance<WaterParkSeeder>(scope.ServiceProvider);
+    await waterParkSeeder.SeedAsync();
 }
 
 app.UseMiddleware<PB.Api.ExceptionMiddleware>();
